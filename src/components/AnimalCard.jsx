@@ -36,8 +36,8 @@ export default function AnimalCard({ animal, onOpen, isAdmin, onEdit, onDelete }
         {animal.imageURL ? (
           <img 
             alt={animal.nombre} 
-            src={animal.imageURL} // Usamos imageURL
-            className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+            src={animal.imageURL}
+            className="w-full h-full object-contain transition-transform duration-300 hover:scale-110"
           />
         ) : (
           <div className="w-full h-full bg-gray-300 flex items-center justify-center text-gray-500 text-sm">

@@ -23,7 +23,7 @@ import QRModal from './components/QRModal.jsx';
 
 // Tus imágenes (asumiendo que tienes volver.png en public/images)
 // Asegúrate de tener esta imagen en la carpeta `public`
-const volverImg = '/volver.png'; 
+const volverImg = '/images/volver.png'; 
 
 function App() {
   const [animals, setAnimals] = useState([]);
@@ -161,7 +161,7 @@ function App() {
       {/* --- Header / Navbar --- */}
       <nav className="bg-blue-500 p-4 shadow-md sticky top-0 z-40">
         <div className="container mx-auto flex justify-between items-center">
-          <img src="/logo-angostura.png" alt="Angostura del Biobío" className="h-12" /> {/* Asegúrate de tener este logo */}
+          <img src="/images/Logo-Angostura.png" alt="Angostura del Biobío" className="h-12" /> {/* Asegúrate de tener este logo */}
           
           {/* Barra de Búsqueda */}
           <div className="relative">
