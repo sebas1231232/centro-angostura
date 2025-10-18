@@ -7,13 +7,15 @@ import { getStorage } from "firebase/storage";
 // --- PEGA AQUÍ TU CONFIGURACIÓN DE FIREBASE ---
 // La que copiaste al crear tu app web
 const firebaseConfig = {
-  apiKey: "AIzaSy...xxxxxxxxxxxx",
-  authDomain: "tu-proyecto.firebaseapp.com",
-  projectId: "tu-proyecto",
-  storageBucket: "tu-proyecto.appspot.com",
-  messagingSenderId: "xxxxxxxxxxxx",
-  appId: "1:xxxxxxxxxxxx:web:xxxxxxxxxxxx"
+  apiKey: "AIzaSyARTZcraE9nZ9G29tkLjxwi14RfZ80dIqY",
+  authDomain: "angostura-animales.firebaseapp.com",
+  projectId: "angostura-animales",
+  storageBucket: "angostura-animales.firebasestorage.app",
+  messagingSenderId: "250440486373",
+  appId: "1:250440486373:web:8052e23f8ab11433bcb30c",
+  measurementId: "G-HKGVJ3XGLV"
 };
+
 // ---------------------------------------------
 
 // Inicializar servicios
