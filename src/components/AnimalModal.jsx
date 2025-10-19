@@ -70,7 +70,7 @@ export default function AnimalModal({ animal, onClose, volverImg }) {
                   ({animal.nombreCientifico})
                 </h3>
               )}
-              <ul className="space-y-2">
+              <ul className="space-y-2 font-quicksand">
                 <InfoItem label="Tipo" value={animal.tipo} />
                 <InfoItem label="Dónde vive" value={animal.dondeVive} />
                 <InfoItem label="Cómo es" value={animal.comoEs} />
@@ -115,7 +115,7 @@ export default function AnimalModal({ animal, onClose, volverImg }) {
                 ({animal.nombreCientifico})
               </h3>
             )}
-            <ul className="space-y-1">
+            <ul className="space-y-1 font-quicksand">
               <InfoItem label="Tipo" value={animal.tipo} />
               <InfoItem label="Dónde vive" value={animal.dondeVive} />
               <InfoItem label="Cómo es" value={animal.comoEs} />
