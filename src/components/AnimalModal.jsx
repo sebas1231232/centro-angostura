@@ -25,18 +25,18 @@ export default function AnimalModal({ animal, onClose, volverImg }) {
       {/* --- CAMBIOS PRINCIPALES AQUÍ ---                                 */}
       {/* ================================================================== */}
       <div 
-        // --- CAMBIO: Quitamos aspectRatio, añadimos altura (h-[80vh]) ---
-        className="w-full max-w-7xl h-[80vh] bg-contain bg-no-repeat bg-center relative hidden md:flex items-center" // items-center para centrar verticalmente el contenido
+        // --- CAMBIO: Aumentamos altura a h-[95vh] ---
+        className="w-full max-w-7xl h-[95vh] bg-contain bg-no-repeat bg-center relative hidden md:flex items-center" 
         style={{ 
           backgroundImage: "url('/fondo.png')",
           // Quitamos aspectRatio
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* --- CAMBIO: Padding ajustado para encajar visualmente --- */}
-        {/* Prueba con estos valores, si no encaja, ajusta px-20, py-24 */}
-        <div className="w-full px-20 lg:px-32 py-24"> 
-          <div className="flex flex-col md:flex-row gap-6 items-start"> {/* items-start para alinear arriba */}
+        {/* --- CAMBIO: Padding ajustado para la nueva altura --- */}
+        {/* Ajusta estos valores si el contenido no encaja bien visualmente */}
+        <div className="w-full px-24 lg:px-36 py-28"> 
+          <div className="flex flex-col md:flex-row gap-8 items-start"> {/* Aumentamos gap */}
             
             {/* Columna Imagen + Botón (Desktop - 1/3) */}
             <div className="w-full md:w-1/3 flex-shrink-0 flex flex-col items-center">
@@ -44,7 +44,6 @@ export default function AnimalModal({ animal, onClose, volverImg }) {
                 <img 
                   src={animal.imageURL}
                   alt={animal.nombre} 
-                  // Mantenemos la imagen contenida
                   className="w-full h-auto object-cover rounded-2xl border-4 border-lime-200 mb-4" 
                 />
               ) : (
@@ -55,14 +54,14 @@ export default function AnimalModal({ animal, onClose, volverImg }) {
               {/* Botón Volver (Desktop) */}
               <button 
                 onClick={onClose} 
-                className="transition-transform hover:scale-110" // Quitamos mt-4 para mejor control con padding
+                className="transition-transform hover:scale-110"
               >
                 <img src={volverImg} alt="Volver" className="h-28" />
               </button>
             </div>
             
             {/* Columna Texto (Desktop - 2/3) */}
-            <div className="w-full md:w-2/3 text-gray-800"> {/* Quitamos md:pt-8 */}
+            <div className="w-full md:w-2/3 text-gray-800"> 
               <h2 className="text-2xl font-extrabold text-lime-800 mb-1">
                 {animal.nombre}
               </h2>
