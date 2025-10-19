@@ -24,16 +24,15 @@ export default function AnimalModal({ animal, onClose, volverImg }) {
       {/* 1. VERSIÓN DESKTOP (Horizontal, con fondo.png)                  */}
       {/* ================================================================== */}
       <div 
-        className="w-full max-w-7xl bg-contain bg-no-repeat bg-center relative hidden md:flex" // Mantenemos el contenedor grande
+        className="w-full max-w-7xl bg-contain bg-no-repeat bg-center relative hidden md:flex" // Modal grande
         style={{ 
           backgroundImage: "url('/fondo.png')",
-          aspectRatio: '1.6' // Mantenemos la proporción del fondo
+          aspectRatio: '1.6' 
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Padding ajustado para que quepa en el fondo grande */}
-        <div className="py-12 md:py-16 px-16 md:px-24 lg:px-32 w-full"> 
-          {/* --- CAMBIO: Volvemos a 1/3 y 2/3 --- */}
+        {/* --- CAMBIO: Padding horizontal ligeramente reducido --- */}
+        <div className="py-12 md:py-16 px-12 md:px-20 lg:px-28 w-full"> 
           <div className="flex flex-col md:flex-row gap-6">
             
             {/* Columna Imagen + Botón (Desktop - 1/3) */}
@@ -42,11 +41,11 @@ export default function AnimalModal({ animal, onClose, volverImg }) {
                 <img 
                   src={animal.imageURL}
                   alt={animal.nombre} 
-                  // Mantenemos la imagen más pequeña
-                  className="w-full max-w-sm mx-auto h-auto object-cover rounded-2xl border-4 border-lime-200" 
+                  // --- CAMBIO: Quitamos max-w-sm, dejamos w-full ---
+                  className="w-full h-auto object-cover rounded-2xl border-4 border-lime-200" 
                 />
               ) : (
-                <div className="w-full max-w-sm mx-auto h-48 bg-lime-200 rounded-2xl flex items-center justify-center text-lime-600">
+                <div className="w-full h-48 bg-lime-200 rounded-2xl flex items-center justify-center text-lime-600">
                   Sin imagen
                 </div>
               )}
@@ -84,18 +83,16 @@ export default function AnimalModal({ animal, onClose, volverImg }) {
 
       {/* ================================================================== */}
       {/* 2. VERSIÓN MÓVIL (Vertical, con fondo_android.png)              */}
-      {/* --- CAMBIOS PRINCIPALES AQUÍ ---                                 */}
       {/* ================================================================== */}
       <div 
-        // --- CAMBIO: Quitamos aspectRatio, usamos bg-cover ---
-        className="flex flex-col md:hidden w-full max-w-sm bg-cover bg-no-repeat bg-center relative shadow-lg overflow-y-auto max-h-[90vh] rounded-[40px]" // Añadimos redondeo por si bg-cover no cubre todo
+        className="flex flex-col md:hidden w-full max-w-sm bg-cover bg-no-repeat bg-center relative shadow-lg overflow-y-auto max-h-[90vh] rounded-[40px]" // Redondeo por si bg-cover no cubre
         style={{ 
           backgroundImage: "url('/fondo_android.png')",
-          // Quitamos aspectRatio para que la altura dependa del contenido
+          // Quitamos aspectRatio
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* --- CAMBIO: Aumentamos padding vertical (py-16) y ajustamos horizontal (px-10) --- */}
+        {/* Padding vertical aumentado */}
         <div className="px-10 py-16 flex flex-col items-center"> 
         
           {/* Imagen del Animal (Móvil) */}
