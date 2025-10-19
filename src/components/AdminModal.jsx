@@ -1,96 +1,137 @@
-// src/components/AdminModal.jsx
-import React, { useState } from 'react'; // Eliminamos useEffect de aquí
+// src/components/AnimalModal.jsx
+import React from 'react';
 
-// Componente pequeño para los inputs (sin cambios)
-const InputField = ({ label, name, value, onChange, placeholder = '', rows = 1 }) => (
-  <label className="block mb-3 font-quicksand"> {/* Aplicamos Quicksand a las etiquetas */}
-    <span className="text-gray-700 font-bold">{label}</span>
-    {rows > 1 ? (
-      <textarea
-        name={name}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        rows={rows}
-        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 font-quicksand" // Fuente Quicksand
-      />
-    ) : (
-      <input
-        type="text"
-        name={name}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 font-quicksand" // Fuente Quicksand
-      />
-    )}
-  </label>
+// Pequeña función para renderizar un item de la lista (sin cambios)
+const InfoItem = ({ label, value }) => (
+  value ? (
+    <li className="flex text-sm">
+      <span className="font-bold w-32 shrink-0">{label}:</span>
+      <span>{value}</span>
+    </li>
+  ) : null
 );
 
-
-export default function AdminModal({ initialData, onClose, onSave }) {
-  // --- CAMBIO AQUÍ: Inicialización del estado más simple ---
-  // Usamos una función para que initialData solo se lea una vez al inicio.
-  const [animal, setAnimal] = useState(() => initialData);
-
-  // Ya NO necesitamos el useEffect que actualizaba 'animal' si 'initialData' cambiaba
-
-  function handleChange(e) {
-    const { name, value } = e.target;
-    setAnimal(prev => ({ ...prev, [name]: value }));
-  }
-
-  function handleSave() {
-    onSave(animal);
-  }
+export default function AnimalModal({ animal, onClose, volverImg }) {
+  if (!animal) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4" onClick={onClose}>
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4"
+      onClick={onClose}
+    >
+
+      {/* ================================================================== */}
+      {/* 1. VERSIÓN DESKTOP (Horizontal, con fondo.png)                  */}
+      {/* --- CAMBIOS PRINCIPALES AQUÍ ---                                 */}
+      {/* ================================================================== */}
       <div 
-        // Usamos un fondo sólido simple para el modal de admin, más claro
-        className="bg-white rounded-2xl p-6 md:p-8 w-full max-w-3xl relative shadow-lg h-[90vh] overflow-y-auto" 
+        // --- 1. FONDO GRANDE: Ocupa 95% de la altura y centrará su contenido ---
+        className="w-full h-[95vh] bg-contain bg-no-repeat bg-center relative hidden md:flex items-center justify-center" 
+        style={{ 
+          backgroundImage: "url('/fondo.png')",
+        }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Fuente Luckiest para el título */}
-        <h2 className="text-2xl font-bold mb-6 text-gray-800 font-luckiest text-center"> 
-          {initialData?.isNew ? 'Añadir Nuevo Animal' : 'Editar Animal'}
-        </h2>
-        
-        {/* Formulario con campos */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-          <InputField label="Nombre" name="nombre" value={animal.nombre} onChange={handleChange} placeholder="Perdiz Chilena" />
-          <InputField label="Nombre Científico" name="nombreCientifico" value={animal.nombreCientifico} onChange={handleChange} placeholder="Nothoprocta perdicaria" />
-          <InputField label="Tipo" name="tipo" value={animal.tipo} onChange={handleChange} placeholder="Ave terrestre" />
-          <InputField label="URL de Imagen" name="imageURL" value={animal.imageURL} onChange={handleChange} placeholder="https://..." />
-        
-          {/* Usamos col-span-2 para que estos campos ocupen todo el ancho en desktop */}
-          <div className="md:col-span-2">
-             <InputField label="Dónde vive" name="dondeVive" value={animal.dondeVive} onChange={handleChange} placeholder="En Chile, desde Atacama hasta el Biobío..." rows={2} />
-          </div>
-          <div className="md:col-span-2">
-            <InputField label="Cómo es" name="comoEs" value={animal.comoEs} onChange={handleChange} placeholder="Pequeña, de color café..." rows={2} />
-          </div>
-          <div className="md:col-span-2">
-            <InputField label="Qué come" name="queCome" value={animal.queCome} onChange={handleChange} placeholder="Semillas, raíces, insectos..." rows={2} />
-          </div>
-           <div className="md:col-span-2">
-            <InputField label="Reproducción" name="reproduccion" value={animal.reproduccion} onChange={handleChange} placeholder="Pone hasta 12 huevos..." rows={2} />
-          </div>
-           <div className="md:col-span-2">
-            <InputField label="Dato curioso" name="datoCurioso" value={animal.datoCurioso} onChange={handleChange} placeholder="Su silbido es fuerte..." rows={2} />
+        {/* --- 2. CAJA DE CONTENIDO: Esta caja tiene el tamaño fijo --- */}
+        <div className="w-full max-w-5xl"> {/* Puedes bajar a max-w-4xl si quieres el contenido más pequeño */}
+          <div className="flex flex-col md:flex-row gap-8 items-start">
+            
+            {/* Columna Imagen + Botón (1/3 de la caja de contenido) */}
+            <div className="w-full md:w-1/3 flex-shrink-0 flex flex-col items-center">
+              {animal.imageURL ? (
+                <img 
+                  src={animal.imageURL}
+                  alt={animal.nombre} 
+                  // La imagen se ajusta a su columna (que ahora es 1/3 de max-w-5xl)
+                  className="w-full h-auto object-cover rounded-2xl border-4 border-lime-200 mb-4" 
+                />
+              ) : (
+                <div className="w-full h-48 bg-lime-200 rounded-2xl flex items-center justify-center text-lime-600 mb-4">
+                  Sin imagen
+                </div>
+              )}
+              {/* Botón Volver (Desktop) */}
+              <button 
+                onClick={onClose} 
+                className="transition-transform hover:scale-110"
+              >
+                <img src={volverImg} alt="Volver" className="h-28" />
+              </button>
+            </div>
+            
+            {/* Columna Texto (2/3 de la caja de contenido) */}
+            <div className="w-full md:w-2/3 text-gray-800"> 
+              <h2 className="text-2xl font-extrabold text-lime-800 mb-1">
+                {animal.nombre}
+              </h2>
+              {animal.nombreCientifico && (
+                <h3 className="text-base italic text-lime-700 mb-3">
+                  ({animal.nombreCientifico})
+                </h3>
+              )}
+              <ul className="space-y-2 font-quicksand">
+                <InfoItem label="Tipo" value={animal.tipo} />
+                <InfoItem label="Dónde vive" value={animal.dondeVive} />
+                <InfoItem label="Cómo es" value={animal.comoEs} />
+                <InfoItem label="Qué come" value={animal.queCome} />
+                <InfoItem label="Reproducción" value={animal.reproduccion} />
+                <InfoItem label="Dato curioso" value={animal.datoCurioso} />
+              </ul>
+            </div>
           </div>
         </div>
-        
-        {/* Botones de acción (con fuente Luckiest) */}
-        <div className="flex justify-end gap-4 mt-8">
-          <button onClick={onClose} className="px-6 py-2 bg-gray-500 text-white font-bold rounded-lg shadow hover:bg-gray-600 transition font-luckiest">
-            Cancelar
-          </button>
-          <button onClick={handleSave} className="px-6 py-2 bg-blue-600 text-white font-bold rounded-lg shadow hover:bg-blue-700 transition font-luckiest">
-            Guardar
+      </div>
+
+      {/* ================================================================== */}
+      {/* 2. VERSIÓN MÓVIL (Vertical, con fondo_android.png)              */}
+      {/* (Sin cambios)                                                    */}
+      {/* ================================================================== */}
+      <div 
+        className="flex flex-col md:hidden w-full max-w-sm bg-cover bg-no-repeat bg-center relative shadow-lg overflow-y-auto max-h-[90vh] rounded-[40px]" 
+        style={{ 
+          backgroundImage: "url('/fondo_android.png')",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="px-10 py-20 flex flex-col items-center flex-grow"> 
+          {animal.imageURL ? (
+            <img 
+              src={animal.imageURL}
+              alt={animal.nombre} 
+              className="w-full max-w-[200px] h-auto object-cover rounded-2xl border-4 border-lime-200 mb-4" 
+            />
+          ) : (
+            <div className="w-full max-w-[200px] h-32 bg-lime-200 rounded-2xl flex items-center justify-center text-lime-600 mb-4">
+              Sin imagen
+            </div>
+          )}
+          <div className="text-gray-800 w-full">
+            <h2 className="text-xl font-extrabold text-lime-800 mb-1 text-center">
+              {animal.nombre}
+            </h2>
+            {animal.nombreCientifico && (
+              <h3 className="text-sm italic text-lime-700 mb-3 text-center">
+                ({animal.nombreCientifico})
+              </h3>
+            )}
+            <ul className="space-y-1 font-quicksand">
+              <InfoItem label="Tipo" value={animal.tipo} />
+              <InfoItem label="Dónde vive" value={animal.dondeVive} />
+              <InfoItem label="Cómo es" value={animal.comoEs} />
+              <InfoItem label="Qué come" value={animal.queCome} />
+              <InfoItem label="Reproducción" value={animal.reproduccion} />
+              <InfoItem label="Dato curioso" value={animal.datoCurioso} />
+            </ul>
+          </div>
+          <button 
+            onClick={onClose} 
+            className="mt-6 transition-transform hover:scale-110"
+          >
+            <img src={volverImg} alt="Volver" className="h-24" /> 
           </button>
         </div>
       </div>
+
     </div>
   );
 }
