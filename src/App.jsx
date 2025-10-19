@@ -13,7 +13,7 @@ import AdminLoginModal from './components/AdminLoginModal.jsx';
 import AdminModal from './components/AdminModal.jsx';
 import QRModal from './components/QRModal.jsx';
 
-const volverImg = '/volver.png'; 
+const volverImg = '/images/volver.png'; 
 
 function App() {
   const [animals, setAnimals] = useState([]);
@@ -146,7 +146,7 @@ function App() {
       <nav className="bg-blue-500 p-4 shadow-md sticky top-0 z-40">
         {/* --- CAMBIO: Ajuste de padding y contenedor --- */}
         <div className="container mx-auto flex justify-between items-center px-2 md:px-4">
-          <img src="/Logo-Angostura.png" alt="Angostura del Biobío" className="h-12" />
+          <img src="/images/Logo-Angostura.png" alt="Angostura del Biobío" className="h-12" />
           
           <div className="relative">
             <input 
