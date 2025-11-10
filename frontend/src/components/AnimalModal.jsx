@@ -1,144 +1,71 @@
-// src/components/AnimalModal.jsx
 import React from 'react';
 
-// Pequeña función para renderizar un item de la lista (sin cambios)
-const InfoItem = ({ label, value }) => (
-  value ? (
-    <li className="flex text-sm">
-      <span className="font-bold w-32 shrink-0">{label}:</span>
-      <span>{value}</span>
-    </li>
-  ) : null
-);
+function AnimalModal({ animal, onClose }) {
+  // Desestructuramos con los NUEVOS nombres de la base de datos MySQL
+  const { nombre_comun, nombre_cientifico, descripcion, imagen_url } = animal;
 
-export default function AnimalModal({ animal, onClose, volverImg }) {
-  if (!animal) return null;
+  // Detectar si es móvil para cambiar el fondo (esta lógica no cambia)
+  const isMobile = window.innerWidth < 768;
+  const backgroundClass = isMobile
+    ? "bg-[url('/fondo_android.png')]"
+    : "bg-[url('/fondo.png')]";
 
   return (
-    <div 
-      className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4"
-      onClick={onClose}
+    <div
+      className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4"
+      onClick={onClose} // Cierra al hacer clic en el fondo
     >
-
-      {/* ================================================================== */}
-      {/* 1. VERSIÓN DESKTOP (Horizontal, con fondo.png)                  */}
-      {/* --- CAMBIOS PRINCIPALES AQUÍ ---                                 */}
-      {/* ================================================================== */}
-      <div 
-        // --- CAMBIO: Quitamos max-w-7xl, usamos w-11/12 ---
-        className="w-11/12 h-[95vh] bg-contain bg-no-repeat bg-center relative hidden md:flex items-center" 
-        style={{ 
-          backgroundImage: "url('/fondo.png')",
-          // Quitamos aspectRatio
-        }}
-        onClick={(e) => e.stopPropagation()}
+      <div
+        className={`relative w-full max-w-4xl h-[80vh] ${backgroundClass} bg-cover bg-center rounded-lg shadow-2xl p-8 md:p-12 flex items-center justify-center`}
+        onClick={(e) => e.stopPropagation()} // Evita que el clic en el modal cierre
       >
-        {/* --- CAMBIO: Aumentamos MUCHO el padding para centrar contenido --- */}
-        <div className="w-full px-32 lg:px-48 py-32"> 
-          <div className="flex flex-col md:flex-row gap-8 items-start">
-            
-            {/* Columna Imagen + Botón (Desktop - 1/3) */}
-            <div className="w-full md:w-1/3 flex-shrink-0 flex flex-col items-center">
-              {animal.imageURL ? (
-                <img 
-                  src={animal.imageURL}
-                  alt={animal.nombre} 
-                  // --- CAMBIO: Limitamos ancho máximo de la imagen ---
-                  className="w-full max-w-md h-auto object-cover rounded-2xl border-4 border-lime-200 mb-4" 
-                />
-              ) : (
-                <div className="w-full max-w-md h-48 bg-lime-200 rounded-2xl flex items-center justify-center text-lime-600 mb-4">
-                  Sin imagen
-                </div>
-              )}
-              {/* Botón Volver (Desktop) */}
-              <button 
-                onClick={onClose} 
-                className="transition-transform hover:scale-110"
-              >
-                <img src={volverImg} alt="Volver" className="h-28" />
-              </button>
+        {/* Botón Volver Gráfico (no cambia) */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 md:top-8 md:right-12 z-20"
+        >
+          <img src="/volver.png" alt="Volver" className="w-16 h-16 md:w-20 md:h-20 transition-transform hover:scale-110" />
+        </button>
+
+        {/* Contenido del Modal (Diseño PC) - Actualizado con nuevos nombres */}
+        <div className="hidden md:flex w-full h-full items-center justify-center p-8">
+          <div className="grid grid-cols-2 gap-8 items-center max-w-full">
+            <div className="flex justify-center items-center">
+              <img
+                src={imagen_url}
+                alt={nombre_comun}
+                className="max-w-full max-h-[60vh] h-auto object-contain rounded-lg shadow-lg"
+              />
             </div>
-            
-            {/* Columna Texto (Desktop - 2/3) */}
-            <div className="w-full md:w-2/3 text-gray-800"> 
-              <h2 className="text-2xl font-extrabold text-lime-800 mb-1">
-                {animal.nombre}
-              </h2>
-              {animal.nombreCientifico && (
-                <h3 className="text-base italic text-lime-700 mb-3">
-                  ({animal.nombreCientifico})
-                </h3>
-              )}
-              {/* --- CAMBIO: Añadimos font-quicksand si no estaba --- */}
-              <ul className="space-y-2 font-quicksand">
-                <InfoItem label="Tipo" value={animal.tipo} />
-                <InfoItem label="Dónde vive" value={animal.dondeVive} />
-                <InfoItem label="Cómo es" value={animal.comoEs} />
-                <InfoItem label="Qué come" value={animal.queCome} />
-                <InfoItem label="Reproducción" value={animal.reproduccion} />
-                <InfoItem label="Dato curioso" value={animal.datoCurioso} />
-              </ul>
+            <div className="text-gray-800 max-h-[60vh] overflow-y-auto pr-4">
+              <h2 className="text-4xl lg:text-5xl font-bold font-luckiest mb-2">{nombre_comun}</h2>
+              <h4 className="text-xl lg:text-2xl italic font-quicksand font-semibold mb-4">{nombre_cientifico}</h4>
+              <p className="text-base lg:text-lg font-quicksand leading-relaxed">
+                {descripcion}
+              </p>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* ================================================================== */}
-      {/* 2. VERSIÓN MÓVIL (Vertical, con fondo_android.png)              */}
-      {/* --- CAMBIOS PRINCIPALES AQUÍ ---                                 */}
-      {/* ================================================================== */}
-      <div 
-        // --- CAMBIO: Usamos bg-cover y quitamos aspectRatio ---
-        className="flex flex-col md:hidden w-full max-w-sm bg-cover bg-no-repeat bg-center relative shadow-lg overflow-y-auto max-h-[90vh] rounded-[40px]" 
-        style={{ 
-          backgroundImage: "url('/fondo_android.png')",
-          // Quitamos aspectRatio
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* --- CAMBIO: Aumentamos padding vertical (py-20) --- */}
-        <div className="px-10 py-20 flex flex-col items-center flex-grow"> {/* flex-grow para ayudar a estirar */}
-          {animal.imageURL ? (
-            <img 
-              src={animal.imageURL}
-              alt={animal.nombre} 
-              className="w-full max-w-[200px] h-auto object-cover rounded-2xl border-4 border-lime-200 mb-4" 
-            />
-          ) : (
-            <div className="w-full max-w-[200px] h-32 bg-lime-200 rounded-2xl flex items-center justify-center text-lime-600 mb-4">
-              Sin imagen
-            </div>
-          )}
-          <div className="text-gray-800 w-full">
-            <h2 className="text-xl font-extrabold text-lime-800 mb-1 text-center">
-              {animal.nombre}
-            </h2>
-            {animal.nombreCientifico && (
-              <h3 className="text-sm italic text-lime-700 mb-3 text-center">
-                ({animal.nombreCientifico})
-              </h3>
-            )}
-            {/* --- CAMBIO: Añadimos font-quicksand si no estaba --- */}
-            <ul className="space-y-1 font-quicksand">
-              <InfoItem label="Tipo" value={animal.tipo} />
-              <InfoItem label="Dónde vive" value={animal.dondeVive} />
-              <InfoItem label="Cómo es" value={animal.comoEs} />
-              <InfoItem label="Qué come" value={animal.queCome} />
-              <InfoItem label="Reproducción" value={animal.reproduccion} />
-              <InfoItem label="Dato curioso" value={animal.datoCurioso} />
-            </ul>
+        {/* Contenido del Modal (Diseño Móvil) - Actualizado con nuevos nombres */}
+        <div className="md:hidden w-full h-full flex flex-col items-center justify-start p-4 pt-10 overflow-y-auto">
+          <img
+            src={imagen_url}
+            alt={nombre_comun}
+            className="w-full max-w-xs h-auto max-h-[40vh] object-contain rounded-lg shadow-lg mb-4"
+          />
+          <div className="text-gray-800 text-center">
+            <h2 className="text-3xl font-bold font-luckiest mb-1">{nombre_comun}</h2>
+            <h4 className="text-lg italic font-quicksand font-semibold mb-3">{nombre_cientifico}</h4>
+            <p className="text-sm font-quicksand leading-relaxed">
+              {descripcion}
+            </p>
           </div>
-          {/* Botón Volver (Móvil) */}
-          <button 
-            onClick={onClose} 
-            className="mt-6 transition-transform hover:scale-110" // mt-6 para separarlo
-          >
-            <img src={volverImg} alt="Volver" className="h-24" /> 
-          </button>
         </div>
-      </div>
 
+      </div>
     </div>
   );
 }
+
+export default AnimalModal;
