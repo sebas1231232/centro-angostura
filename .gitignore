@@ -67,3 +67,10 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+
+# Ignorar dependencias de Node
+/node_modules
+
+# Ignorar archivos de "build" (producción)
+/build
+/dist
