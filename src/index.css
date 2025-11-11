@@ -2,3 +2,26 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* --- AÑADE ESTO --- */
+.video-background {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  z-index: -100; /* Se asegura que esté detrás de todo */
+  object-fit: cover; /* Cubre todo el espacio disponible */
+  filter: brightness(0.7); /* Oscurece el video para que el texto resalte */
+}
+
+/* Asegura que el contenido de la app esté sobre el video 
+  (El div principal de App.jsx debe tener `position: relative`)
+*/
+#root > div {
+  position: relative;
+  z-index: 1;
+}
+/* --- FIN DE LO AÑADIDO --- */

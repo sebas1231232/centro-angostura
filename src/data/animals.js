@@ -1,115 +1,50 @@
 const initialAnimals = [
-
   {
-
     id: 'perdiz-chilena',
-
-    name: 'Perdiz Chilena',
-
-    image: '/images/Perdiz_chilena.jpg',
-
-    description: 'Ave nativa de Chile, caracterizada por su plumaje críptico que le ayuda a camuflarse. Habita en matorrales y pastizales.',
-
-    type: 'Ave',
-
-    size: 'Pequeño',
-
-    habitat: 'Terrestre',
-
+    nombre: 'Perdiz Chilena',
+    // Asegúrate que esta ruta coincida con tu carpeta 'public'
+    imageURL: '/images/Perdiz_chilena.jpg', 
+    tipo: 'Ave',
+    dondeVive: 'Habita en matorrales y pastizales.',
+    comoEs: 'Plumaje críptico que le ayuda a camuflarse.',
+    queCome: 'Semillas e insectos.',
+    reproduccion: 'Nidifica en el suelo.',
+    datoCurioso: 'Es un ave nativa de Chile.'
   },
-
   {
-
     id: 'churrin-del-norte',
-
-    name: 'Churrín del Norte',
-
-    image: '/images/churrin-del-norte.webp',
-
-    description: 'Un pequeño pájaro insectívoro, conocido por su llamado melodioso. Se encuentra en zonas boscosas del norte de Chile.',
-
-    type: 'Ave',
-
-    size: 'Pequeño',
-
-    habitat: 'Bosque',
-
+    nombre: 'Churrín del Norte',
+    imageURL: '/images/churrin-del-norte.webp',
+    tipo: 'Ave',
+    dondeVive: 'Zonas boscosas del norte de Chile.',
+    comoEs: 'Un pequeño pájaro insectívoro.',
+    queCome: 'Insectos.',
+    reproduccion: 'Construye nidos en arbustos.',
+    datoCurioso: 'Conocido por su llamado melodioso.'
   },
-
   {
-
-    id: 'codorniz',
-
-    name: 'Codorniz',
-
-    image: 'https://cdn.pixabay.com/photo/2017/08/04/18/43/quail-2503250_1280.jpg',
-
-    description: 'Ave terrestre que se alimenta de semillas e insectos. Su camuflaje la hace difícil de detectar en la maleza.',
-
-    type: 'Ave',
-
-    size: 'Pequeño',
-
-    habitat: 'Terrestre',
-
+    id: 'zorro-culpeo',
+    nombre: 'Zorro Culpeo',
+    // Ejemplo de GIF
+    imageURL: '/images/zorro-culpeo.gif', 
+    tipo: 'Mamífero',
+    dondeVive: 'Montañas y valles.',
+    comoEs: 'El cánido nativo más grande de Chile, pelaje gris y rojizo.',
+    queCome: 'Roedores, conejos, y a veces fruta.',
+    reproduccion: 'Madrigueras subterráneas.',
+    datoCurioso: 'Es un ágil cazador crepuscular.'
   },
-
   {
-
-    id: 'pato-anteojillos',
-
-    name: 'Pato Anteojillos',
-
-    image: 'https://cdn.pixabay.com/photo/2016/08/29/18/41/duck-1629080_1280.jpg',
-
-    description: 'Se le reconoce por la distintiva mancha blanca alrededor de sus ojos, lo que le da el nombre. Es común en lagunas y humedales de la región.',
-
-    type: 'Ave',
-
-    size: 'Mediano',
-
-    habitat: 'Acuático',
-
-  },
-
-  {
-
-    id: 'torcaza',
-
-    name: 'Torcaza',
-
-    image: 'https://cdn.pixabay.com/photo/2021/04/09/17/20/dove-6165780_1280.jpg',
-
-    description: 'Especie de paloma grande y robusta, con plumaje gris azulado. Es una de las aves más comunes en los bosques del sur.',
-
-    type: 'Ave',
-
-    size: 'Mediano',
-
-    habitat: 'Bosque',
-
-  },
-
-  {
-
     id: 'cisne-de-cuello-negro',
-
-    name: 'Cisne de Cuello Negro',
-
-    image: 'https://cdn.pixabay.com/photo/2017/10/24/09/01/bird-2883390_1280.jpg',
-
-    description: 'Majestuoso cisne con un cuerpo blanco y un elegante cuello negro. Es un símbolo de los humedales del sur de Chile.',
-
-    type: 'Ave',
-
-    size: 'Grande',
-
-    habitat: 'Acuático',
-
-  },
-
+    nombre: 'Cisne de Cuello Negro',
+    imageURL: 'https://cdn.pixabay.com/photo/2017/10/24/09/01/bird-2883390_1280.jpg',
+    tipo: 'Ave',
+    dondeVive: 'Lagunas y humedales.',
+    comoEs: 'Cuerpo blanco y un elegante cuello negro.',
+    queCome: 'Plantas acuáticas.',
+    reproduccion: 'Nidos flotantes.',
+    datoCurioso: 'Símbolo de los humedales del sur de Chile.'
+  }
 ];
-
-
 
 export default initialAnimals;

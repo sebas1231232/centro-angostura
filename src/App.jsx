@@ -1,18 +1,15 @@
 // src/App.jsx
 import React, { useState, useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 
-import { 
-  fetchAnimals, saveAnimal, createAnimal, deleteAnimal, 
-  loginAdmin, logoutAdmin, onAdminStateChange 
-} from './firebase'; // Asegúrate que la ruta sea correcta si moviste el archivo
+// Importa los datos locales como respaldo
+import initialAnimals from './data/animals.js'; 
 
 import AnimalCard from './components/AnimalCard.jsx';
 import AnimalModal from './components/AnimalModal.jsx';
-import AdminLoginModal from './components/AdminLoginModal.jsx';
-import AdminModal from './components/AdminModal.jsx';
+// Los modales de Admin se han eliminado
 import QRModal from './components/QRModal.jsx';
 
+// La ruta a la imagen 'volver' (asegúrate que esté en 'public/images/')
 const volverImg = '/images/volver.png'; 
 
 function App() {
@@ -22,48 +19,49 @@ function App() {
   const [activeFilter, setActiveFilter] = useState('Todos');
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAnimal, setSelectedAnimal] = useState(null);
-  const [animalToEdit, setAnimalToEdit] = useState(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  
+  // Todos los estados de Admin (isAdmin, isLoginModalOpen, etc.) se han eliminado.
 
   useEffect(() => {
+    // Esta función ahora carga desde tu API (XAMPP) o usa los datos locales.
     const getAnimals = async () => {
       setIsLoading(true);
       try {
-        const animalsData = await fetchAnimals();
+        // 1. Intenta cargar desde tu API local (XAMPP)
+        // CAMBIA ESTA URL por la ruta a tu API real
+        const response = await fetch('/api/animals.php'); 
+        
+        if (!response.ok) {
+          throw new Error('La API local falló. Usando datos de respaldo.');
+        }
+        
+        const animalsData = await response.json();
         setAnimals(animalsData);
         setFilteredAnimals(animalsData);
+
       } catch (error) {
-        console.error("Error al cargar animales:", error);
+        console.warn(error.message);
+        // 2. Si falla, usa los datos locales del archivo importado
+        setAnimals(initialAnimals);
+        setFilteredAnimals(initialAnimals);
       }
       setIsLoading(false);
     };
+    
     getAnimals();
-
-    const unsubscribe = onAdminStateChange((user) => {
-      setIsAdmin(!!user);
-    });
-    return () => unsubscribe();
   }, []);
 
-  // --- ARREGLO FILTROS ---
   useEffect(() => {
     let result = animals;
 
-    // 1. Filtrar por tipo (más flexible)
     if (activeFilter !== 'Todos') {
-      // Compara si el 'tipo' guardado INCLUYE el texto del filtro
-      // Ej: "Ave terrestre" incluye "Ave"
-      // Convertimos a minúscula para evitar problemas de mayúsculas
-      const filterLower = activeFilter.toLowerCase().slice(0, -1); // Quitamos la 's' final (Aves -> Ave)
+      const filterLower = activeFilter.toLowerCase().slice(0, -1); 
       result = result.filter(animal => 
         animal.tipo && animal.tipo.toLowerCase().includes(filterLower)
       );
     }
 
-    // 2. Filtrar por búsqueda
     if (searchTerm) {
       result = result.filter(animal => 
         animal.nombre.toLowerCase().includes(searchTerm.toLowerCase())
@@ -82,52 +80,9 @@ function App() {
     setActiveFilter(filter);
   };
 
-  const handleLogin = async (email, password) => {
-    try {
-      await loginAdmin(email, password);
-      setIsLoginModalOpen(false);
-    } catch (error) {
-      alert("Error: " + error.message);
-    }
-  };
+  // Todas las funciones de Admin (handleLogin, handleSaveAnimal, etc.) se han eliminado.
 
-  const handleLogout = async () => {
-    await logoutAdmin();
-  };
-
-  const handleSaveAnimal = async (animalData) => {
-    if (animalData.isNew) {
-        delete animalData.isNew;
-        await createAnimal(animalData);
-    } else {
-        await saveAnimal(animalData);
-    }
-    
-    const animalsData = await fetchAnimals();
-    setAnimals(animalsData);
-    setIsEditModalOpen(false);
-    setAnimalToEdit(null);
-  };
-
-  const handleDeleteAnimal = async (animalId) => {
-    if (window.confirm("¿Estás seguro?")) {
-      await deleteAnimal(animalId);
-      const animalsData = await fetchAnimals();
-      setAnimals(animalsData);
-    }
-  };
-
-  const handleOpenAddModal = () => {
-    setAnimalToEdit({ id: uuidv4(), nombre: '', nombreCientifico: '', tipo: 'Ave', dondeVive: '', comoEs: '', queCome: '', reproduccion: '', datoCurioso: '', imageURL: '', isNew: true });
-    setIsEditModalOpen(true);
-  };
-  
-  const handleOpenEditModal = (animal) => {
-    setAnimalToEdit(animal);
-    setIsEditModalOpen(true);
-  };
-  
-  // --- Colores para los filtros ---
+  // --- Colores para los filtros (Sin cambios) ---
   const filterColors = {
     Todos: 'bg-purple-400',
     Aves: 'bg-sky-400',
@@ -136,15 +91,21 @@ function App() {
     Anfibios: 'bg-lime-400',
     Peces: 'bg-yellow-400',
   };
-  const activeColor = 'bg-red-500 text-white scale-110'; // Estilo activo más llamativo
-  const inactiveColor = 'text-gray-800 hover:scale-105'; // Estilo inactivo
+  const activeColor = 'bg-red-500 text-white scale-110';
+  const inactiveColor = 'text-gray-800 hover:scale-105';
 
   return (
-    // --- CAMBIO: Fuente principal ---
-    <div className="min-h-screen bg-gray-100 font-luckiest">
-      {/* --- Header / Navbar --- */}
+    // Añadimos 'position: relative' para que el z-index funcione con el video
+    <div className="min-h-screen bg-gray-100 font-luckiest relative">
+      
+      {/* --- FONDO DE VIDEO AÑADIDO --- */}
+      {/* Debes crear la carpeta 'public/videos' y añadir 'fondo.mp4' */}
+      <video autoPlay loop muted playsInline className="video-background">
+        <source src="/videos/fondo.mp4" type="video/mp4" />
+      </video>
+      
+      {/* --- Header / Navbar (Modificado) --- */}
       <nav className="bg-blue-500 p-4 shadow-md sticky top-0 z-40">
-        {/* --- CAMBIO: Ajuste de padding y contenedor --- */}
         <div className="container mx-auto flex justify-between items-center px-2 md:px-4">
           <img src="/images/Logo-Angostura.png" alt="Angostura del Biobío" className="h-12" />
           
@@ -158,10 +119,9 @@ function App() {
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
           </div>
 
-          {/* --- CAMBIO: Aumentado el espacio (gap-6) --- */}
           <div className="flex items-center gap-3 md:gap-6">
             <button 
-              className="flex items-center gap-2 text-white font-semibold text-xs md:text-base" // Texto más pequeño en móvil
+              className="flex items-center gap-2 text-white font-semibold text-xs md:text-base"
               onClick={() => setIsQrModalOpen(true)}
             >
               <span className="hidden md:inline">COMPARTIR PANTALLA INTERACTIVA</span>
@@ -170,30 +130,22 @@ function App() {
               </svg>
             </button>
             
-            {isAdmin ? ( /* Botones Admin sin cambios de fuente */
-                <button onClick={handleLogout} className="p-2 rounded-full bg-red-500 text-white" title="Salir">...</button>
-            ) : (
-                <button onClick={() => setIsLoginModalOpen(true)} className="p-2 rounded-full bg-white text-blue-500" title="Admin">...</button>
-            )}
-            {isAdmin && (
-                <button onClick={handleOpenAddModal} className="p-2 rounded-full bg-green-500 text-white" title="Añadir">...</button>
-            )}
+            {/* Los botones de Admin han sido eliminados */}
+
           </div>
         </div>
       </nav>
 
-      {/* --- Filtros --- */}
+      {/* --- Filtros (Sin cambios) --- */}
       <div className="container mx-auto p-4 flex justify-center gap-3 flex-wrap">
-        {/* Usamos Object.keys para obtener los nombres de los filtros */}
         {Object.keys(filterColors).map(filter => (
           <button 
             key={filter}
             onClick={() => handleFilter(filter)}
-            // --- CAMBIO: Aplicando colores dinámicos y fuente ---
             className={`px-6 py-2 rounded-full font-bold text-sm shadow-md transition-transform duration-150 ease-in-out font-luckiest tracking-wider
               ${activeFilter === filter 
-                ? activeColor // Estilo activo con rojo
-                : `${filterColors[filter]} ${inactiveColor}` // Color base + estilo inactivo
+                ? activeColor
+                : `${filterColors[filter]} ${inactiveColor}`
               }
             `}
           >
@@ -202,7 +154,7 @@ function App() {
         ))}
       </div>
 
-      {/* --- Grilla de Animales (Aplicará font-luckiest por herencia) --- */}
+      {/* --- Grilla de Animales (Modificada) --- */}
       <main className="container mx-auto p-4">
         {isLoading ? (
           <div className="text-center text-gray-500">Cargando...</div>
@@ -210,17 +162,17 @@ function App() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {filteredAnimals.map(animal => (
               <AnimalCard 
-                key={animal.id} animal={animal} isAdmin={isAdmin}
+                key={animal.id} 
+                animal={animal} 
+                // Se eliminaron las props de admin
                 onOpen={() => setSelectedAnimal(animal)}
-                onEdit={() => handleOpenEditModal(animal)}
-                onDelete={() => handleDeleteAnimal(animal.id)}
               />
             ))}
           </div>
         )}
       </main>
 
-      {/* --- Modales --- */}
+      {/* --- Modales (Modificado) --- */}
       {selectedAnimal && (
         <AnimalModal 
           animal={selectedAnimal} 
@@ -228,9 +180,9 @@ function App() {
           volverImg={volverImg}
         />
       )}
-      {isLoginModalOpen && ( <AdminLoginModal onClose={() => setIsLoginModalOpen(false)} onSuccess={handleLogin} /> )}
       {isQrModalOpen && ( <QRModal onClose={() => setIsQrModalOpen(false)} /> )}
-      {isEditModalOpen && ( <AdminModal initialData={animalToEdit} onClose={() => { setIsEditModalOpen(false); setAnimalToEdit(null); }} onSave={handleSaveAnimal} /> )}
+      
+      {/* Los modales de Admin han sido eliminados */}
     </div>
   );
 }
