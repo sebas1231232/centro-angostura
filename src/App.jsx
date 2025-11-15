@@ -1,16 +1,18 @@
 // src/App.jsx
 import React, { useState, useEffect } from 'react';
-
-// Importa los datos locales como respaldo
 import initialAnimals from './data/animals.js'; 
-
 import AnimalCard from './components/AnimalCard.jsx';
 import AnimalModal from './components/AnimalModal.jsx';
-// Los modales de Admin se han eliminado
 import QRModal from './components/QRModal.jsx';
+import AdminLoginModal from './components/AdminLoginModal.jsx'; 
 
-// La ruta a la imagen 'volver' (asegúrate que esté en 'public/images/')
 const volverImg = '/images/volver.png'; 
+
+// --- CAMBIO IMPORTANTE AQUÍ ---
+// Apuntamos directamente a tu servidor XAMPP
+const API_URL_GET = 'http://localhost/api/animals.php';
+const API_URL_LOGIN = 'http://localhost/api/admin_login.php';
+// --- FIN DEL CAMBIO ---
 
 function App() {
   const [animals, setAnimals] = useState([]);
@@ -21,30 +23,22 @@ function App() {
   const [selectedAnimal, setSelectedAnimal] = useState(null);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   
-  // Todos los estados de Admin (isAdmin, isLoginModalOpen, etc.) se han eliminado.
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   useEffect(() => {
-    // Esta función ahora carga desde tu API (XAMPP) o usa los datos locales.
     const getAnimals = async () => {
       setIsLoading(true);
       try {
-        // 1. Intenta cargar desde tu API local (XAMPP)
-        // CAMBIA ESTA URL por la ruta a tu API real
-        const response = await fetch('/api/animals.php'); 
-        
+        const response = await fetch(API_URL_GET); 
         if (!response.ok) {
           throw new Error('La API local falló. Usando datos de respaldo.');
         }
-        
         const animalsData = await response.json();
         setAnimals(animalsData);
-        setFilteredAnimals(animalsData);
-
       } catch (error) {
         console.warn(error.message);
-        // 2. Si falla, usa los datos locales del archivo importado
         setAnimals(initialAnimals);
-        setFilteredAnimals(initialAnimals);
       }
       setIsLoading(false);
     };
@@ -54,20 +48,17 @@ function App() {
 
   useEffect(() => {
     let result = animals;
-
     if (activeFilter !== 'Todos') {
       const filterLower = activeFilter.toLowerCase().slice(0, -1); 
       result = result.filter(animal => 
         animal.tipo && animal.tipo.toLowerCase().includes(filterLower)
       );
     }
-
     if (searchTerm) {
       result = result.filter(animal => 
         animal.nombre.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-    
     setFilteredAnimals(result);
   }, [searchTerm, activeFilter, animals]);
 
@@ -80,9 +71,31 @@ function App() {
     setActiveFilter(filter);
   };
 
-  // Todas las funciones de Admin (handleLogin, handleSaveAnimal, etc.) se han eliminado.
+  const handleLogin = async (email, password) => {
+    const response = await fetch(API_URL_LOGIN, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password })
+    });
 
-  // --- Colores para los filtros (Sin cambios) ---
+    const data = await response.json();
+
+    if (data.success) {
+      setIsAdmin(true);
+      setIsLoginModalOpen(false);
+    } else {
+      // Pasamos la respuesta de depuración a la alerta
+      alert(`Error: ${data.message} \n\nDebug: ${JSON.stringify(data)}`);
+      throw new Error(data.message || 'Error de login');
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAdmin(false);
+  };
+
   const filterColors = {
     Todos: 'bg-purple-400',
     Aves: 'bg-sky-400',
@@ -95,16 +108,11 @@ function App() {
   const inactiveColor = 'text-gray-800 hover:scale-105';
 
   return (
-    // Añadimos 'position: relative' para que el z-index funcione con el video
     <div className="min-h-screen bg-gray-100 font-luckiest relative">
-      
-      {/* --- FONDO DE VIDEO AÑADIDO --- */}
-      {/* Debes crear la carpeta 'public/videos' y añadir 'fondo.mp4' */}
       <video autoPlay loop muted playsInline className="video-background">
         <source src="/videos/fondo.mp4" type="video/mp4" />
       </video>
       
-      {/* --- Header / Navbar (Modificado) --- */}
       <nav className="bg-blue-500 p-4 shadow-md sticky top-0 z-40">
         <div className="container mx-auto flex justify-between items-center px-2 md:px-4">
           <img src="/images/Logo-Angostura.png" alt="Angostura del Biobío" className="h-12" />
@@ -130,13 +138,24 @@ function App() {
               </svg>
             </button>
             
-            {/* Los botones de Admin han sido eliminados */}
-
+            {isAdmin ? (
+              <button onClick={handleLogout} className="p-2 rounded-full bg-red-500 text-white" title="Salir del modo Admin">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+                </svg>
+              </button>
+            ) : (
+              <button onClick={() => setIsLoginModalOpen(true)} className="p-2 rounded-full bg-white text-blue-500" title="Modo Admin">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                </svg>
+              </button>
+            )}
           </div>
         </div>
       </nav>
 
-      {/* --- Filtros (Sin cambios) --- */}
+      {/* (El resto del JSX no cambia...) */}
       <div className="container mx-auto p-4 flex justify-center gap-3 flex-wrap">
         {Object.keys(filterColors).map(filter => (
           <button 
@@ -154,7 +173,6 @@ function App() {
         ))}
       </div>
 
-      {/* --- Grilla de Animales (Modificada) --- */}
       <main className="container mx-auto p-4">
         {isLoading ? (
           <div className="text-center text-gray-500">Cargando...</div>
@@ -164,7 +182,7 @@ function App() {
               <AnimalCard 
                 key={animal.id} 
                 animal={animal} 
-                // Se eliminaron las props de admin
+                isAdmin={isAdmin}
                 onOpen={() => setSelectedAnimal(animal)}
               />
             ))}
@@ -172,7 +190,6 @@ function App() {
         )}
       </main>
 
-      {/* --- Modales (Modificado) --- */}
       {selectedAnimal && (
         <AnimalModal 
           animal={selectedAnimal} 
@@ -182,7 +199,12 @@ function App() {
       )}
       {isQrModalOpen && ( <QRModal onClose={() => setIsQrModalOpen(false)} /> )}
       
-      {/* Los modales de Admin han sido eliminados */}
+      {isLoginModalOpen && (
+        <AdminLoginModal 
+          onClose={() => setIsLoginModalOpen(false)}
+          onSuccess={handleLogin}
+        />
+      )}
     </div>
   );
 }
