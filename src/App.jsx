@@ -4,17 +4,18 @@ import initialAnimals from './data/animals.js';
 import AnimalCard from './components/AnimalCard.jsx';
 import AnimalModal from './components/AnimalModal.jsx';
 import QRModal from './components/QRModal.jsx';
-import AdminLoginModal from './components/AdminLoginModal.jsx'; 
+import AdminLoginModal from './components/AdminLoginModal.jsx';
+import AdminModal from './components/AdminModal.jsx'; 
+import { v4 as uuidv4 } from 'uuid'; 
 
 const volverImg = '/images/volver.png'; 
 
-// --- CAMBIO IMPORTANTE AQUÍ ---
-// Apuntamos directamente a tu servidor XAMPP
 const API_URL_GET = 'http://localhost/api/animals.php';
 const API_URL_LOGIN = 'http://localhost/api/admin_login.php';
-// --- FIN DEL CAMBIO ---
+const API_URL_CRUD = 'http://localhost/api/admin_crud.php';
 
 function App() {
+  // ... (estados sin cambios) ...
   const [animals, setAnimals] = useState([]);
   const [filteredAnimals, setFilteredAnimals] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -22,27 +23,31 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAnimal, setSelectedAnimal] = useState(null);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
-  
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingAnimal, setEditingAnimal] = useState(null);
 
-  useEffect(() => {
-    const getAnimals = async () => {
+  // ... (getAnimals, useEffect de carga, useEffect de filtro, handleSearch, handleFilter, handleLogin, handleLogout, handleOpenAdd, handleOpenEdit, handleCloseEdit - todos sin cambios) ...
+  const getAnimals = async () => {
+    if (animals.length === 0) {
       setIsLoading(true);
-      try {
-        const response = await fetch(API_URL_GET); 
-        if (!response.ok) {
-          throw new Error('La API local falló. Usando datos de respaldo.');
-        }
-        const animalsData = await response.json();
-        setAnimals(animalsData);
-      } catch (error) {
-        console.warn(error.message);
-        setAnimals(initialAnimals);
+    }
+    try {
+      const response = await fetch(API_URL_GET); 
+      if (!response.ok) {
+        throw new Error('La API local falló. Usando datos de respaldo.');
       }
-      setIsLoading(false);
-    };
-    
+      const animalsData = await response.json();
+      setAnimals(animalsData);
+    } catch (error) {
+      console.warn(error.message);
+      setAnimals(initialAnimals);
+    }
+    setIsLoading(false);
+  };
+  
+  useEffect(() => {
     getAnimals();
   }, []);
 
@@ -74,20 +79,15 @@ function App() {
   const handleLogin = async (email, password) => {
     const response = await fetch(API_URL_LOGIN, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     });
-
     const data = await response.json();
-
     if (data.success) {
       setIsAdmin(true);
       setIsLoginModalOpen(false);
     } else {
-      // Pasamos la respuesta de depuración a la alerta
-      alert(`Error: ${data.message} \n\nDebug: ${JSON.stringify(data)}`);
+      alert(`Error: ${data.message}`);
       throw new Error(data.message || 'Error de login');
     }
   };
@@ -95,6 +95,72 @@ function App() {
   const handleLogout = () => {
     setIsAdmin(false);
   };
+
+  const handleOpenAdd = () => {
+    setEditingAnimal(null); 
+    setIsEditModalOpen(true);
+  };
+
+  const handleOpenEdit = (animal) => {
+    setEditingAnimal(animal);
+    setIsEditModalOpen(true);
+  };
+
+  const handleCloseEdit = () => {
+    setIsEditModalOpen(false);
+    setEditingAnimal(null);
+  };
+  
+  // --- CAMBIO: handleSaveAnimal ahora recibe FormData ---
+  const handleSaveAnimal = async (formData) => {
+    // Ya no necesita JSON.stringify ni headers
+    const response = await fetch(API_URL_CRUD, {
+      method: 'POST',
+      body: formData // Simplemente envía el FormData
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      handleCloseEdit();
+      await getAnimals(); // Recargamos los animales
+    } else {
+      throw new Error(data.message || 'Error al guardar');
+    }
+  };
+  // --- FIN DE CAMBIO ---
+
+  // --- CAMBIO: handleDeleteAnimal ahora recibe la imageURL ---
+  const handleDeleteAnimal = async (animalId, imageURL) => {
+    if (!window.confirm("¿Estás seguro de que quieres eliminar este animal?")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(API_URL_CRUD, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // Añadimos la imageURL para que PHP sepa qué archivo borrar
+        body: JSON.stringify({ 
+          accion: 'eliminar', 
+          id: animalId,
+          imageURL: imageURL 
+        }) 
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        await getAnimals(); // Recargamos
+      } else {
+        throw new Error(data.message || 'Error al eliminar');
+      }
+    } catch (error) {
+      alert("Error: " + error.message);
+    }
+  };
+  // --- FIN DE CAMBIO ---
+
 
   const filterColors = {
     Todos: 'bg-purple-400',
@@ -110,10 +176,12 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-100 font-luckiest relative">
       <video autoPlay loop muted playsInline className="video-background">
-        <source src="/videos/fondo.mp4" type="video/mp4" />
+        {/* --- CAMBIO: Usamos tu nombre de video --- */}
+        <source src="/videos/video_fondo.mp4" type="video/mp4" />
       </video>
       
-      <nav className="bg-blue-500 p-4 shadow-md sticky top-0 z-40">
+      {/* ... (Nav, Filtros - sin cambios) ... */}
+       <nav className="bg-blue-500 p-4 shadow-md sticky top-0 z-40">
         <div className="container mx-auto flex justify-between items-center px-2 md:px-4">
           <img src="/images/Logo-Angostura.png" alt="Angostura del Biobío" className="h-12" />
           
@@ -128,6 +196,7 @@ function App() {
           </div>
 
           <div className="flex items-center gap-3 md:gap-6">
+            
             <button 
               className="flex items-center gap-2 text-white font-semibold text-xs md:text-base"
               onClick={() => setIsQrModalOpen(true)}
@@ -139,11 +208,18 @@ function App() {
             </button>
             
             {isAdmin ? (
-              <button onClick={handleLogout} className="p-2 rounded-full bg-red-500 text-white" title="Salir del modo Admin">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
-                </svg>
-              </button>
+              <>
+                <button onClick={handleOpenAdd} className="p-2 rounded-full bg-green-500 text-white" title="Añadir nuevo animal">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                  </svg>
+                </button>
+                <button onClick={handleLogout} className="p-2 rounded-full bg-red-500 text-white" title="Salir del modo Admin">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+                  </svg>
+                </button>
+              </>
             ) : (
               <button onClick={() => setIsLoginModalOpen(true)} className="p-2 rounded-full bg-white text-blue-500" title="Modo Admin">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
@@ -155,7 +231,6 @@ function App() {
         </div>
       </nav>
 
-      {/* (El resto del JSX no cambia...) */}
       <div className="container mx-auto p-4 flex justify-center gap-3 flex-wrap">
         {Object.keys(filterColors).map(filter => (
           <button 
@@ -184,12 +259,16 @@ function App() {
                 animal={animal} 
                 isAdmin={isAdmin}
                 onOpen={() => setSelectedAnimal(animal)}
+                onEdit={() => handleOpenEdit(animal)}
+                // --- CAMBIO: Pasamos la imageURL al borrar ---
+                onDelete={() => handleDeleteAnimal(animal.id, animal.imageURL)}
               />
             ))}
           </div>
         )}
       </main>
 
+      {/* ... (Modales - sin cambios) ... */}
       {selectedAnimal && (
         <AnimalModal 
           animal={selectedAnimal} 
@@ -203,6 +282,15 @@ function App() {
         <AdminLoginModal 
           onClose={() => setIsLoginModalOpen(false)}
           onSuccess={handleLogin}
+        />
+      )}
+
+      {isEditModalOpen && (
+        <AdminModal 
+          key={editingAnimal ? editingAnimal.id : 'new'} 
+          initialData={editingAnimal}
+          onClose={handleCloseEdit}
+          onSave={handleSaveAnimal}
         />
       )}
     </div>
