@@ -1,5 +1,5 @@
 // src/components/AdminModal.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 // (Los componentes FormInput y FormSelect no cambian)
@@ -29,7 +29,6 @@ const FormSelect = ({ label, name, value, onChange, options }) => (
 
 export default function AdminModal({ initialData, onClose, onSave }) {
   
-  // Estado para los datos de texto del animal
   const [animalData, setAnimalData] = useState(initialData || {
     id: uuidv4(),
     nombre: '',
@@ -41,27 +40,42 @@ export default function AdminModal({ initialData, onClose, onSave }) {
     reproduccion: '',
     datoCurioso: '',
     imageURL: '',
+    audioURL: '', // <-- AÑADIDO
   });
 
-  // --- AÑADIDO: Estado separado para el archivo de imagen ---
+  // Estados para los archivos
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(initialData?.imageURL || null);
+  // --- AÑADIDO: Estados de Audio ---
+  const [audioFile, setAudioFile] = useState(null);
+  const [audioPreview, setAudioPreview] = useState(initialData?.audioURL || null);
   // --- FIN DE AÑADIDO ---
   
   const [isLoading, setIsLoading] = useState(false);
 
-  // Maneja cambios en los inputs de TEXTO
   const handleChange = (e) => {
     const { name, value } = e.target;
     setAnimalData(prev => ({ ...prev, [name]: value }));
   };
 
-  // --- AÑADIDO: Maneja el cambio del input de ARCHIVO ---
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setImageFile(file); // Guardamos el archivo
-      setImagePreview(URL.createObjectURL(file)); // Creamos una URL temporal para la vista previa
+      setImageFile(file); 
+      setImagePreview(URL.createObjectURL(file)); 
+    }
+  };
+
+  // --- AÑADIDO: Manejador para el archivo de audio ---
+  const handleAudioFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setAudioFile(file);
+      // Limpiamos la vista previa anterior si existía
+      if (audioPreview) {
+        URL.revokeObjectURL(audioPreview);
+      }
+      setAudioPreview(URL.createObjectURL(file));
     }
   };
   // --- FIN DE AÑADIDO ---
@@ -70,29 +84,33 @@ export default function AdminModal({ initialData, onClose, onSave }) {
     e.preventDefault();
     setIsLoading(true);
     
-    // --- CAMBIO: Usamos FormData en lugar de JSON ---
     const formData = new FormData();
     
-    // 1. Añadimos la acción (crear o editar)
+    // 1. Acción
     formData.append('accion', initialData ? 'editar' : 'crear');
 
-    // 2. Añadimos todos los datos de texto del animal
+    // 2. Datos de texto
     for (const key in animalData) {
       formData.append(key, animalData[key]);
     }
-    // (PHP usará 'id', 'nombre', 'tipo', etc. desde aquí)
     
-    // 3. Añadimos la imagen existente (para que PHP sepa si no se cambió)
+    // 3. URLs existentes
     formData.append('imageURL_existente', initialData?.imageURL || '');
+    // --- AÑADIDO ---
+    formData.append('audioURL_existente', initialData?.audioURL || '');
 
-    // 4. Si el usuario seleccionó un nuevo archivo, lo añadimos
+    // 4. Archivos nuevos
     if (imageFile) {
       formData.append('imagen', imageFile);
     }
-    // --- FIN DE CAMBIO ---
+    // --- AÑADIDO ---
+    if (audioFile) {
+      formData.append('audio', audioFile);
+    }
+    // --- FIN DE AÑADIDO ---
 
     try {
-      await onSave(formData); // Enviamos el FormData a App.jsx
+      await onSave(formData); 
     } catch (error) {
       alert("Error al guardar: " + error.message);
       setIsLoading(false);
@@ -117,15 +135,13 @@ export default function AdminModal({ initialData, onClose, onSave }) {
             <FormInput label="Nombre Científico" name="nombreCientifico" value={animalData.nombreCientifico} onChange={handleChange} />
             <FormSelect label="Tipo" name="tipo" value={animalData.tipo} onChange={handleChange} options={tiposDeAnimal} />
             
-            {/* --- CAMBIO: Input de Archivo y Vista Previa --- */}
+            {/* Input de Imagen (sin cambios) */}
             <div className="mb-4">
               <label className="block text-sm font-bold mb-2 text-gray-700" htmlFor="imagen">
                 Imagen o GIF
               </label>
               <input
-                id="imagen"
-                name="imagen"
-                type="file"
+                id="imagen" name="imagen" type="file"
                 accept="image/jpeg, image/png, image/gif, image/webp"
                 onChange={handleFileChange}
                 className="w-full p-2 border border-gray-300 rounded-lg"
@@ -137,7 +153,29 @@ export default function AdminModal({ initialData, onClose, onSave }) {
                 </div>
               )}
             </div>
-            {/* --- FIN DE CAMBIO --- */}
+
+            {/* --- AÑADIDO: Input de Audio y Vista Previa --- */}
+            <div className="mb-4">
+              <label className="block text-sm font-bold mb-2 text-gray-700" htmlFor="audio">
+                Sonido (MP3, WAV)
+              </label>
+              <input
+                id="audio" name="audio" type="file"
+                accept="audio/mpeg, audio/wav, audio/ogg"
+                onChange={handleAudioFileChange}
+                className="w-full p-2 border border-gray-300 rounded-lg"
+              />
+              {audioPreview && (
+                <div className="mt-2 p-2 border rounded-lg">
+                  <p className="text-sm text-gray-500">Vista previa:</p>
+                  <audio controls src={audioPreview} className="w-full">
+                    Tu navegador no soporta audio.
+                  </audio>
+                </div>
+              )}
+            </div>
+            {/* --- FIN DE AÑADIDO --- */}
+
           </div>
 
           <FormInput label="Dónde vive" name="dondeVive" value={animalData.dondeVive} onChange={handleChange} type="textarea" />
@@ -146,6 +184,7 @@ export default function AdminModal({ initialData, onClose, onSave }) {
           <FormInput label="Reproducción" name="reproduccion" value={animalData.reproduccion} onChange={handleChange} type="textarea" />
           <FormInput label="Dato Curioso" name="datoCurioso" value={animalData.datoCurioso} onChange={handleChange} type="textarea" />
 
+          {/* Botones (sin cambios) */}
           <div className="flex justify-end gap-4 mt-6">
             <button type="button" onClick={onClose} disabled={isLoading} className="px-6 py-2 bg-gray-600 text-white font-bold rounded-lg shadow hover:bg-gray-700 transition">
               Cancelar

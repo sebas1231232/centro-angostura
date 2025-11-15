@@ -1,7 +1,7 @@
 // src/components/AnimalModal.jsx
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
-// Pequeña función para renderizar un item de la lista (sin cambios)
+// (InfoItem sin cambios)
 const InfoItem = ({ label, value }) => (
   value ? (
     <li className="flex text-sm">
@@ -12,6 +12,15 @@ const InfoItem = ({ label, value }) => (
 );
 
 export default function AnimalModal({ animal, onClose, volverImg }) {
+  const audioRef = useRef(null);
+
+  useEffect(() => {
+    if (animal && animal.audioURL && audioRef.current) {
+      // Intenta reproducir el audio al abrir el modal
+      audioRef.current.play().catch(e => console.warn("Autoplay de audio bloqueado por el navegador."));
+    }
+  }, [animal]);
+
   if (!animal) return null;
 
   return (
@@ -20,57 +29,40 @@ export default function AnimalModal({ animal, onClose, volverImg }) {
       onClick={onClose}
     >
 
-      {/* ================================================================== */}
-      {/* 1. VERSIÓN DESKTOP (Horizontal, con fondo.png)                  */}
-      {/* --- CAMBIOS PRINCIPALES AQUÍ ---                                 */}
-      {/* ================================================================== */}
+      {/* 1. VERSIÓN DESKTOP */}
       <div 
-        // --- CAMBIO: Quitamos max-w-7xl, usamos w-11/12 ---
         className="w-11/12 h-[95vh] bg-contain bg-no-repeat bg-center relative hidden md:flex items-center" 
-        style={{ 
-          backgroundImage: "url('/fondo.png')",
-          // Quitamos aspectRatio
-        }}
+        style={{ backgroundImage: "url('/fondo.png')"}}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* --- CAMBIO: Aumentamos MUCHO el padding para centrar contenido --- */}
         <div className="w-full px-32 lg:px-48 py-32"> 
           <div className="flex flex-col md:flex-row gap-8 items-start">
             
-            {/* Columna Imagen + Botón (Desktop - 1/3) */}
             <div className="w-full md:w-1/3 flex-shrink-0 flex flex-col items-center">
               {animal.imageURL ? (
-                <img 
-                  src={animal.imageURL}
-                  alt={animal.nombre} 
-                  // --- CAMBIO: Limitamos ancho máximo de la imagen ---
-                  className="w-full max-w-md h-auto object-cover rounded-2xl border-4 border-lime-200 mb-4" 
-                />
+                <img src={animal.imageURL} alt={animal.nombre} className="w-full max-w-md h-auto object-cover rounded-2xl border-4 border-lime-200 mb-4" />
               ) : (
-                <div className="w-full max-w-md h-48 bg-lime-200 rounded-2xl flex items-center justify-center text-lime-600 mb-4">
-                  Sin imagen
-                </div>
+                <div className="w-full max-w-md h-48 bg-lime-200 rounded-2xl flex items-center justify-center text-lime-600 mb-4">Sin imagen</div>
               )}
-              {/* Botón Volver (Desktop) */}
-              <button 
-                onClick={onClose} 
-                className="transition-transform hover:scale-110"
-              >
+              
+              {/* --- CAMBIO: Reproductor de audio oculto --- */}
+              {animal.audioURL && (
+                <audio ref={audioRef} src={animal.audioURL} hidden>
+                  Tu navegador no soporta audio.
+                </audio>
+              )}
+              {/* --- FIN DE CAMBIO --- */}
+
+              <button onClick={onClose} className="transition-transform hover:scale-110">
                 <img src={volverImg} alt="Volver" className="h-28" />
               </button>
             </div>
             
-            {/* Columna Texto (Desktop - 2/3) */}
             <div className="w-full md:w-2/3 text-gray-800"> 
-              <h2 className="text-2xl font-extrabold text-lime-800 mb-1">
-                {animal.nombre}
-              </h2>
+              <h2 className="text-2xl font-extrabold text-lime-800 mb-1">{animal.nombre}</h2>
               {animal.nombreCientifico && (
-                <h3 className="text-base italic text-lime-700 mb-3">
-                  ({animal.nombreCientifico})
-                </h3>
+                <h3 className="text-base italic text-lime-700 mb-3">({animal.nombreCientifico})</h3>
               )}
-              {/* --- CAMBIO: Añadimos font-quicksand si no estaba --- */}
               <ul className="space-y-2 font-quicksand">
                 <InfoItem label="Tipo" value={animal.tipo} />
                 <InfoItem label="Dónde vive" value={animal.dondeVive} />
@@ -80,46 +72,37 @@ export default function AnimalModal({ animal, onClose, volverImg }) {
                 <InfoItem label="Dato curioso" value={animal.datoCurioso} />
               </ul>
             </div>
+
           </div>
         </div>
       </div>
 
-      {/* ================================================================== */}
-      {/* 2. VERSIÓN MÓVIL (Vertical, con fondo_android.png)              */}
-      {/* --- CAMBIOS PRINCIPALES AQUÍ ---                                 */}
-      {/* ================================================================== */}
+      {/* 2. VERSIÓN MÓVIL */}
       <div 
-        // --- CAMBIO: Usamos bg-cover y quitamos aspectRatio ---
         className="flex flex-col md:hidden w-full max-w-sm bg-cover bg-no-repeat bg-center relative shadow-lg overflow-y-auto max-h-[90vh] rounded-[40px]" 
-        style={{ 
-          backgroundImage: "url('/fondo_android.png')",
-          // Quitamos aspectRatio
-        }}
+        style={{ backgroundImage: "url('/fondo_android.png')"}}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* --- CAMBIO: Aumentamos padding vertical (py-20) --- */}
-        <div className="px-10 py-20 flex flex-col items-center flex-grow"> {/* flex-grow para ayudar a estirar */}
+        <div className="px-10 py-20 flex flex-col items-center flex-grow">
           {animal.imageURL ? (
-            <img 
-              src={animal.imageURL}
-              alt={animal.nombre} 
-              className="w-full max-w-[200px] h-auto object-cover rounded-2xl border-4 border-lime-200 mb-4" 
-            />
+            <img src={animal.imageURL} alt={animal.nombre} className="w-full max-w-[200px] h-auto object-cover rounded-2xl border-4 border-lime-200 mb-4" />
           ) : (
-            <div className="w-full max-w-[200px] h-32 bg-lime-200 rounded-2xl flex items-center justify-center text-lime-600 mb-4">
-              Sin imagen
-            </div>
+            <div className="w-full max-w-[200px] h-32 bg-lime-200 rounded-2xl flex items-center justify-center text-lime-600 mb-4">Sin imagen</div>
           )}
+
+          {/* --- CAMBIO: Reproductor de audio oculto --- */}
+          {animal.audioURL && (
+            <audio ref={audioRef} src={animal.audioURL} hidden>
+              Tu navegador no soporta audio.
+            </audio>
+          )}
+          {/* --- FIN DE CAMBIO --- */}
+
           <div className="text-gray-800 w-full">
-            <h2 className="text-xl font-extrabold text-lime-800 mb-1 text-center">
-              {animal.nombre}
-            </h2>
+            <h2 className="text-xl font-extrabold text-lime-800 mb-1 text-center">{animal.nombre}</h2>
             {animal.nombreCientifico && (
-              <h3 className="text-sm italic text-lime-700 mb-3 text-center">
-                ({animal.nombreCientifico})
-              </h3>
+              <h3 className="text-sm italic text-lime-700 mb-3 text-center">({animal.nombreCientifico})</h3>
             )}
-            {/* --- CAMBIO: Añadimos font-quicksand si no estaba --- */}
             <ul className="space-y-1 font-quicksand">
               <InfoItem label="Tipo" value={animal.tipo} />
               <InfoItem label="Dónde vive" value={animal.dondeVive} />
@@ -129,16 +112,11 @@ export default function AnimalModal({ animal, onClose, volverImg }) {
               <InfoItem label="Dato curioso" value={animal.datoCurioso} />
             </ul>
           </div>
-          {/* Botón Volver (Móvil) */}
-          <button 
-            onClick={onClose} 
-            className="mt-6 transition-transform hover:scale-110" // mt-6 para separarlo
-          >
+          <button onClick={onClose} className="mt-6 transition-transform hover:scale-110">
             <img src={volverImg} alt="Volver" className="h-24" /> 
           </button>
         </div>
       </div>
-
     </div>
   );
 }
