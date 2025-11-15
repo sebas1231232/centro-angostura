@@ -1,6 +1,6 @@
 // src/App.jsx
 import React, { useState, useEffect } from 'react';
-import initialAnimals from './data/animals.js'; 
+// initialAnimals ya no se importa
 import AnimalCard from './components/AnimalCard.jsx';
 import AnimalModal from './components/AnimalModal.jsx';
 import QRModal from './components/QRModal.jsx';
@@ -10,7 +10,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 const volverImg = '/images/volver.png'; 
 
-// --- CAMBIO: Rutas Relativas gracias al Proxy de Vite ---
 const API_URL_GET = '/api/animals.php';
 const API_URL_LOGIN = '/api/admin_login.php';
 const API_URL_CRUD = '/api/admin_crud.php';
@@ -18,38 +17,57 @@ const API_URL_CRUD = '/api/admin_crud.php';
 function App() {
   const [animals, setAnimals] = useState([]);
   const [filteredAnimals, setFilteredAnimals] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null); // <-- Estado para manejar errores
+
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('Todos');
-  const [isLoading, setIsLoading] = useState(true);
   const [selectedAnimal, setSelectedAnimal] = useState(null);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+  
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingAnimal, setEditingAnimal] = useState(null);
+  const [editingAnimal, setEditingAnimal] = useState(null); 
 
+  /**
+   * Carga la lista completa de animales desde la API (PHP/MySQL).
+   * Si falla, mostrará un error.
+   */
   const getAnimals = async () => {
+    // Solo muestra "Cargando..." en la carga inicial
     if (animals.length === 0) {
       setIsLoading(true);
     }
+    setError(null); // Limpia errores anteriores
+    
     try {
       const response = await fetch(API_URL_GET); 
       if (!response.ok) {
-        throw new Error('La API local falló. Usando datos de respaldo.');
+        throw new Error(`Error ${response.status}: No se pudieron cargar los datos.`);
       }
       const animalsData = await response.json();
+      
+      // Si la API devuelve un error JSON (ej. conexión a BD fallida)
+      if (animalsData.error) {
+         throw new Error(`Error de la API: ${animalsData.error}`);
+      }
+      
       setAnimals(animalsData);
     } catch (error) {
-      console.warn(error.message);
-      setAnimals(initialAnimals);
+      // Si el fetch falla (ej. XAMPP está apagado o hay un error 404)
+      console.error("Error al cargar animales:", error);
+      setError(error.message); // Guardar el error para mostrarlo
     }
     setIsLoading(false);
   };
   
+  // Carga inicial de datos
   useEffect(() => {
     getAnimals();
   }, []);
 
+  // Filtra la lista de animales
   useEffect(() => {
     let result = animals;
     if (activeFilter !== 'Todos') {
@@ -75,6 +93,9 @@ function App() {
     setActiveFilter(filter);
   };
 
+  /**
+   * Envía las credenciales (email/pass) a la API de login.
+   */
   const handleLogin = async (email, password) => {
     const response = await fetch(API_URL_LOGIN, {
       method: 'POST',
@@ -95,6 +116,7 @@ function App() {
     setIsAdmin(false);
   };
 
+  // --- Funciones del Modal de Admin ---
   const handleOpenAdd = () => {
     setEditingAnimal(null); 
     setIsEditModalOpen(true);
@@ -110,6 +132,9 @@ function App() {
     setEditingAnimal(null);
   };
   
+  /**
+   * Guarda un animal (nuevo o editado) vía FormData.
+   */
   const handleSaveAnimal = async (formData) => {
     const response = await fetch(API_URL_CRUD, {
       method: 'POST',
@@ -118,13 +143,15 @@ function App() {
     const data = await response.json();
     if (data.success) {
       handleCloseEdit();
-      await getAnimals(); 
+      await getAnimals(); // Recarga la lista de animales
     } else {
       throw new Error(data.message || 'Error al guardar');
     }
   };
 
-  // --- CAMBIO: Acepta audioURL para el borrado ---
+  /**
+   * Envía la orden de eliminar un animal a la API.
+   */
   const handleDeleteAnimal = async (animalId, imageURL, audioURL) => {
     if (!window.confirm("¿Estás seguro de que quieres eliminar este animal?")) {
       return;
@@ -137,13 +164,13 @@ function App() {
           accion: 'eliminar', 
           id: animalId,
           imageURL: imageURL,
-          audioURL: audioURL // <-- AÑADIDO
+          audioURL: audioURL
         }) 
       });
 
       const data = await response.json();
       if (data.success) {
-        await getAnimals(); 
+        await getAnimals(); // Recarga la lista
       } else {
         throw new Error(data.message || 'Error al eliminar');
       }
@@ -151,8 +178,8 @@ function App() {
       alert("Error: " + error.message);
     }
   };
-  // --- FIN DE CAMBIO ---
 
+  // --- Configuración de Estilos ---
   const filterColors = {
     Todos: 'bg-purple-400',
     Aves: 'bg-sky-400',
@@ -170,16 +197,13 @@ function App() {
         <source src="/videos/video_fondo.mp4" type="video/mp4" />
       </video>
       
-      {/* --- CAMBIO: Barra de Navegación con 3 columnas --- */}
       <nav className="bg-blue-500 p-4 shadow-md sticky top-0 z-40">
         <div className="container mx-auto flex items-center px-2 md:px-4">
           
-          {/* 1. Logo (Izquierda) */}
           <div className="flex-1">
             <img src="/images/Logo-Angostura.png" alt="Angostura del Biobío" className="h-12" />
           </div>
 
-          {/* 2. Buscador (Centrado y más ancho) */}
           <div className="flex-1 flex justify-center px-4">
             <div className="relative">
               <input 
@@ -192,7 +216,6 @@ function App() {
             </div>
           </div>
           
-          {/* 3. Botones (Derecha) */}
           <div className="flex-1 flex justify-end">
             <div className="flex items-center gap-3 md:gap-6">
               <button 
@@ -229,8 +252,6 @@ function App() {
           </div>
         </div>
       </nav>
-      {/* --- FIN DEL CAMBIO DE NAV --- */}
-
 
       <div className="container mx-auto p-4 flex justify-center gap-3 flex-wrap">
         {Object.keys(filterColors).map(filter => (
@@ -250,8 +271,15 @@ function App() {
       </div>
 
       <main className="container mx-auto p-4">
+        {/* Lógica de renderizado actualizada para mostrar carga, error o contenido */}
         {isLoading ? (
-          <div className="text-center text-gray-500">Cargando...</div>
+          <div className="text-center text-white text-xl p-4 bg-black/50 rounded-lg">Cargando...</div>
+        ) : error ? (
+          <div className="text-center text-yellow-400 bg-red-800 p-4 rounded-lg">
+            <p className="font-bold text-2xl">Error al cargar</p>
+            <p className="font-quicksand">{error}</p>
+            <p className="font-quicksand mt-2 text-sm">Asegúrate de que XAMPP (Apache y MySQL) esté funcionando.</p>
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {filteredAnimals.map(animal => (
@@ -261,7 +289,6 @@ function App() {
                 isAdmin={isAdmin}
                 onOpen={() => setSelectedAnimal(animal)}
                 onEdit={() => handleOpenEdit(animal)}
-                // --- CAMBIO: Pasamos audioURL al borrar ---
                 onDelete={() => handleDeleteAnimal(animal.id, animal.imageURL, animal.audioURL)}
               />
             ))}

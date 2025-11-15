@@ -1,16 +1,21 @@
-// src/components/AnimalCard.jsx
 import React from 'react';
 
 export default function AnimalCard({ animal, onOpen, isAdmin, onEdit, onDelete }) {
   
-  // Evitar que el click en los botones de admin abra el modal principal
+  /**
+   * Detiene la propagación del click para evitar que se abra el modal
+   * de detalles al hacer clic en los botones de admin.
+   */
   const handleEdit = (e) => {
-    e.stopPropagation(); // Detiene la propagación del click
+    e.stopPropagation(); 
     onEdit();
   };
 
+  /**
+   * Detiene la propagación del click al eliminar.
+   */
   const handleDelete = (e) => {
-    e.stopPropagation(); // Detiene la propagación del click
+    e.stopPropagation(); 
     onDelete();
   };
 
@@ -20,7 +25,7 @@ export default function AnimalCard({ animal, onOpen, isAdmin, onEdit, onDelete }
       onClick={() => onOpen(animal)}
     >
       
-      {/* --- AÑADIDO: Botones de Admin --- */}
+      {/* Botones de Admin (solo visibles si isAdmin es true) */}
       {isAdmin && (
         <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
           <button 
@@ -45,8 +50,8 @@ export default function AnimalCard({ animal, onOpen, isAdmin, onEdit, onDelete }
           </button>
         </div>
       )}
-      {/* --- FIN DE AÑADIDO --- */}
 
+      {/* Imagen */}
       <div className="w-full h-48 rounded-2xl overflow-hidden mb-4">
         {animal.imageURL ? (
           <img 
@@ -61,6 +66,7 @@ export default function AnimalCard({ animal, onOpen, isAdmin, onEdit, onDelete }
         )}
       </div>
 
+      {/* Footer de la Card */}
       <div className="text-center">
         <h3 className="text-xl font-extrabold uppercase">{animal.nombre}</h3>
         <div className="text-sm opacity-80 uppercase">{animal.tipo}</div>

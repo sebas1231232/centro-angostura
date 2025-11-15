@@ -1,8 +1,9 @@
-// src/components/AdminModal.jsx
 import React, { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
-// (Los componentes FormInput y FormSelect no cambian)
+/**
+ * Componente reutilizable para un campo de texto o textarea del formulario.
+ */
 const FormInput = ({ label, name, value, onChange, type = 'text' }) => (
   <div className="mb-4">
     <label className="block text-sm font-bold mb-2 text-gray-700" htmlFor={name}>
@@ -15,6 +16,10 @@ const FormInput = ({ label, name, value, onChange, type = 'text' }) => (
     )}
   </div>
 );
+
+/**
+ * Componente reutilizable para un <select> del formulario.
+ */
 const FormSelect = ({ label, name, value, onChange, options }) => (
   <div className="mb-4">
     <label className="block text-sm font-bold mb-2 text-gray-700" htmlFor={name}>
@@ -25,10 +30,14 @@ const FormSelect = ({ label, name, value, onChange, options }) => (
     </select>
   </div>
 );
-// --- FIN DE Componentes Sin Cambios ---
 
+/**
+ * Modal de formulario para crear o editar un animal.
+ */
 export default function AdminModal({ initialData, onClose, onSave }) {
   
+  // Inicializa el estado del formulario. Si no hay 'initialData',
+  // crea un objeto nuevo con un ID único.
   const [animalData, setAnimalData] = useState(initialData || {
     id: uuidv4(),
     nombre: '',
@@ -40,77 +49,77 @@ export default function AdminModal({ initialData, onClose, onSave }) {
     reproduccion: '',
     datoCurioso: '',
     imageURL: '',
-    audioURL: '', // <-- AÑADIDO
+    audioURL: '',
   });
 
-  // Estados para los archivos
+  // Estados para manejar los archivos seleccionados y sus vistas previas
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(initialData?.imageURL || null);
-  // --- AÑADIDO: Estados de Audio ---
   const [audioFile, setAudioFile] = useState(null);
   const [audioPreview, setAudioPreview] = useState(initialData?.audioURL || null);
-  // --- FIN DE AÑADIDO ---
   
   const [isLoading, setIsLoading] = useState(false);
 
+  // Actualiza el estado para campos de texto y select
   const handleChange = (e) => {
     const { name, value } = e.target;
     setAnimalData(prev => ({ ...prev, [name]: value }));
   };
 
+  // Maneja la selección de archivo de imagen y genera una vista previa
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setImageFile(file); 
-      setImagePreview(URL.createObjectURL(file)); 
+      setImageFile(file); // Guarda el objeto File
+      setImagePreview(URL.createObjectURL(file)); // Crea URL temporal para <img>
     }
   };
 
-  // --- AÑADIDO: Manejador para el archivo de audio ---
+  // Maneja la selección de archivo de audio y genera una vista previa
   const handleAudioFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setAudioFile(file);
-      // Limpiamos la vista previa anterior si existía
+      setAudioFile(file); // Guarda el objeto File
       if (audioPreview) {
-        URL.revokeObjectURL(audioPreview);
+        URL.revokeObjectURL(audioPreview); // Limpia la URL temporal anterior
       }
-      setAudioPreview(URL.createObjectURL(file));
+      setAudioPreview(URL.createObjectURL(file)); // Crea URL temporal para <audio>
     }
   };
-  // --- FIN DE AÑADIDO ---
 
+  /**
+   * Se ejecuta al enviar el formulario.
+   * Construye un objeto FormData para enviar los datos de texto Y los archivos
+   * a la API de PHP.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     
     const formData = new FormData();
     
-    // 1. Acción
+    // 1. Identifica la acción (crear o editar)
     formData.append('accion', initialData ? 'editar' : 'crear');
 
-    // 2. Datos de texto
+    // 2. Agrega todos los datos de texto (nombre, tipo, etc.)
     for (const key in animalData) {
       formData.append(key, animalData[key]);
     }
     
-    // 3. URLs existentes
+    // 3. Agrega las URLs existentes (para que PHP sepa si debe borrar archivos antiguos)
     formData.append('imageURL_existente', initialData?.imageURL || '');
-    // --- AÑADIDO ---
     formData.append('audioURL_existente', initialData?.audioURL || '');
 
-    // 4. Archivos nuevos
+    // 4. Agrega los archivos nuevos (si se seleccionaron)
     if (imageFile) {
       formData.append('imagen', imageFile);
     }
-    // --- AÑADIDO ---
     if (audioFile) {
       formData.append('audio', audioFile);
     }
-    // --- FIN DE AÑADIDO ---
 
     try {
-      await onSave(formData); 
+      await onSave(formData); // Llama a la función handleSaveAnimal en App.jsx
     } catch (error) {
       alert("Error al guardar: " + error.message);
       setIsLoading(false);
@@ -135,7 +144,6 @@ export default function AdminModal({ initialData, onClose, onSave }) {
             <FormInput label="Nombre Científico" name="nombreCientifico" value={animalData.nombreCientifico} onChange={handleChange} />
             <FormSelect label="Tipo" name="tipo" value={animalData.tipo} onChange={handleChange} options={tiposDeAnimal} />
             
-            {/* Input de Imagen (sin cambios) */}
             <div className="mb-4">
               <label className="block text-sm font-bold mb-2 text-gray-700" htmlFor="imagen">
                 Imagen o GIF
@@ -154,7 +162,6 @@ export default function AdminModal({ initialData, onClose, onSave }) {
               )}
             </div>
 
-            {/* --- AÑADIDO: Input de Audio y Vista Previa --- */}
             <div className="mb-4">
               <label className="block text-sm font-bold mb-2 text-gray-700" htmlFor="audio">
                 Sonido (MP3, WAV)
@@ -174,8 +181,6 @@ export default function AdminModal({ initialData, onClose, onSave }) {
                 </div>
               )}
             </div>
-            {/* --- FIN DE AÑADIDO --- */}
-
           </div>
 
           <FormInput label="Dónde vive" name="dondeVive" value={animalData.dondeVive} onChange={handleChange} type="textarea" />
@@ -184,7 +189,6 @@ export default function AdminModal({ initialData, onClose, onSave }) {
           <FormInput label="Reproducción" name="reproduccion" value={animalData.reproduccion} onChange={handleChange} type="textarea" />
           <FormInput label="Dato Curioso" name="datoCurioso" value={animalData.datoCurioso} onChange={handleChange} type="textarea" />
 
-          {/* Botones (sin cambios) */}
           <div className="flex justify-end gap-4 mt-6">
             <button type="button" onClick={onClose} disabled={isLoading} className="px-6 py-2 bg-gray-600 text-white font-bold rounded-lg shadow hover:bg-gray-700 transition">
               Cancelar

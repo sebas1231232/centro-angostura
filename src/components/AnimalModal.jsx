@@ -1,7 +1,9 @@
-// src/components/AnimalModal.jsx
 import React, { useEffect, useRef } from 'react';
 
-// (InfoItem sin cambios)
+/**
+ * Componente pequeño para mostrar un ítem de información (ej. "Tipo: Ave")
+ * No se renderiza si el valor está vacío.
+ */
 const InfoItem = ({ label, value }) => (
   value ? (
     <li className="flex text-sm">
@@ -11,15 +13,21 @@ const InfoItem = ({ label, value }) => (
   ) : null
 );
 
+/**
+ * Modal que muestra los detalles de un animal.
+ */
 export default function AnimalModal({ animal, onClose, volverImg }) {
   const audioRef = useRef(null);
 
+  /**
+   * Efecto que se ejecuta cuando el 'animal' seleccionado cambia.
+   * Intenta reproducir el audio automáticamente.
+   */
   useEffect(() => {
     if (animal && animal.audioURL && audioRef.current) {
-      // Intenta reproducir el audio al abrir el modal
       audioRef.current.play().catch(e => console.warn("Autoplay de audio bloqueado por el navegador."));
     }
-  }, [animal]);
+  }, [animal]); // Dependencia: se re-ejecuta si 'animal' cambia
 
   if (!animal) return null;
 
@@ -45,13 +53,12 @@ export default function AnimalModal({ animal, onClose, volverImg }) {
                 <div className="w-full max-w-md h-48 bg-lime-200 rounded-2xl flex items-center justify-center text-lime-600 mb-4">Sin imagen</div>
               )}
               
-              {/* --- CAMBIO: Reproductor de audio oculto --- */}
+              {/* Reproductor de audio oculto para autoplay */}
               {animal.audioURL && (
                 <audio ref={audioRef} src={animal.audioURL} hidden>
                   Tu navegador no soporta audio.
                 </audio>
               )}
-              {/* --- FIN DE CAMBIO --- */}
 
               <button onClick={onClose} className="transition-transform hover:scale-110">
                 <img src={volverImg} alt="Volver" className="h-28" />
@@ -90,13 +97,12 @@ export default function AnimalModal({ animal, onClose, volverImg }) {
             <div className="w-full max-w-[200px] h-32 bg-lime-200 rounded-2xl flex items-center justify-center text-lime-600 mb-4">Sin imagen</div>
           )}
 
-          {/* --- CAMBIO: Reproductor de audio oculto --- */}
+          {/* Reproductor de audio oculto para autoplay (Móvil) */}
           {animal.audioURL && (
             <audio ref={audioRef} src={animal.audioURL} hidden>
               Tu navegador no soporta audio.
             </audio>
           )}
-          {/* --- FIN DE CAMBIO --- */}
 
           <div className="text-gray-800 w-full">
             <h2 className="text-xl font-extrabold text-lime-800 mb-1 text-center">{animal.nombre}</h2>

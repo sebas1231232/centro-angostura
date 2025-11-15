@@ -1,25 +1,27 @@
-// vite.config.js
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   
-  // --- AÑADE ESTA SECCIÓN ---
+  // Configura un proxy de desarrollo.
+  // Esto redirige las peticiones de React (ej. localhost:5173) al servidor XAMPP (localhost:80)
+  // para evitar problemas de CORS y simular el entorno de producción.
+
   server: {
     proxy: {
-      // Si React pide algo a /api...
+
+      // Redirige peticiones de API (ej. /api/animals.php)
       '/api': {
-        target: 'http://localhost', // ...redirígelo a XAMPP
+        target: 'http://localhost',
         changeOrigin: true,
       },
-      // Si React pide algo a /uploads...
+
+      // Redirige peticiones de archivos (ej. /uploads/imagen.jpg)
       '/uploads': {
-        target: 'http://localhost', // ...redirígelo a XAMPP
+        target: 'http://localhost',
         changeOrigin: true,
       }
     }
   }
-  // --- FIN DE LA SECCIÓN ---
 })
