@@ -1,11 +1,11 @@
 // src/App.jsx
-import React, { useState, useEffect } from 'react';
-// initialAnimals ya no se importa
+import React, { useState, useEffect, useRef } from 'react'; // Importar useRef
 import AnimalCard from './components/AnimalCard.jsx';
 import AnimalModal from './components/AnimalModal.jsx';
 import QRModal from './components/QRModal.jsx';
 import AdminLoginModal from './components/AdminLoginModal.jsx';
 import AdminModal from './components/AdminModal.jsx'; 
+import AudioControls from './components/AudioControls.jsx'; // Importar nuevo componente
 import { v4 as uuidv4 } from 'uuid'; 
 
 const volverImg = '/images/volver.png'; 
@@ -18,7 +18,7 @@ function App() {
   const [animals, setAnimals] = useState([]);
   const [filteredAnimals, setFilteredAnimals] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null); // <-- Estado para manejar errores
+  const [error, setError] = useState(null); 
 
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('Todos');
@@ -28,46 +28,70 @@ function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingAnimal, setEditingAnimal] = useState(null); 
+  const [editingAnimal, setEditingAnimal] = useState(null);
 
-  /**
-   * Carga la lista completa de animales desde la API (PHP/MySQL).
-   * Si falla, mostrará un error.
-   */
+  // --- ESTADOS DE AUDIO ---
+  const [isAudioSettingsOpen, setIsAudioSettingsOpen] = useState(false);
+  const [bgVolume, setBgVolume] = useState(0.3); // Volumen inicial fondo (30%)
+  const [animalVolume, setAnimalVolume] = useState(1.0); // Volumen inicial animales (100%)
+  const [isBgPlaying, setIsBgPlaying] = useState(false);
+  const bgAudioRef = useRef(null); // Referencia al audio de fondo
+  // ------------------------
+
   const getAnimals = async () => {
-    // Solo muestra "Cargando..." en la carga inicial
     if (animals.length === 0) {
       setIsLoading(true);
     }
-    setError(null); // Limpia errores anteriores
-    
+    setError(null); 
     try {
       const response = await fetch(API_URL_GET); 
       if (!response.ok) {
         throw new Error(`Error ${response.status}: No se pudieron cargar los datos.`);
       }
       const animalsData = await response.json();
-      
-      // Si la API devuelve un error JSON (ej. conexión a BD fallida)
       if (animalsData.error) {
          throw new Error(`Error de la API: ${animalsData.error}`);
       }
-      
       setAnimals(animalsData);
     } catch (error) {
-      // Si el fetch falla (ej. XAMPP está apagado o hay un error 404)
       console.error("Error al cargar animales:", error);
-      setError(error.message); // Guardar el error para mostrarlo
+      setError(error.message); 
     }
     setIsLoading(false);
   };
   
-  // Carga inicial de datos
   useEffect(() => {
     getAnimals();
   }, []);
 
-  // Filtra la lista de animales
+  // --- EFECTO PARA AUDIO DE FONDO ---
+  useEffect(() => {
+    const audio = bgAudioRef.current;
+    if (audio) {
+      audio.volume = bgVolume;
+      // Intentar reproducir automáticamente
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsBgPlaying(true);
+          })
+          .catch(error => {
+            console.log("Autoplay bloqueado. El usuario debe iniciar el audio manualmente.");
+            setIsBgPlaying(false);
+          });
+      }
+    }
+  }, []); // Se ejecuta solo al montar
+
+  // Efecto para actualizar volumen en tiempo real
+  useEffect(() => {
+    if (bgAudioRef.current) {
+      bgAudioRef.current.volume = bgVolume;
+    }
+  }, [bgVolume]);
+  // ----------------------------------
+
   useEffect(() => {
     let result = animals;
     if (activeFilter !== 'Todos') {
@@ -84,18 +108,9 @@ function App() {
     setFilteredAnimals(result);
   }, [searchTerm, activeFilter, animals]);
 
+  const handleSearch = (term) => { setSearchTerm(term); };
+  const handleFilter = (filter) => { setActiveFilter(filter); };
 
-  const handleSearch = (term) => {
-    setSearchTerm(term);
-  };
-
-  const handleFilter = (filter) => {
-    setActiveFilter(filter);
-  };
-
-  /**
-   * Envía las credenciales (email/pass) a la API de login.
-   */
   const handleLogin = async (email, password) => {
     const response = await fetch(API_URL_LOGIN, {
       method: 'POST',
@@ -112,29 +127,20 @@ function App() {
     }
   };
 
-  const handleLogout = () => {
-    setIsAdmin(false);
-  };
+  const handleLogout = () => { setIsAdmin(false); };
 
-  // --- Funciones del Modal de Admin ---
   const handleOpenAdd = () => {
     setEditingAnimal(null); 
     setIsEditModalOpen(true);
   };
-
   const handleOpenEdit = (animal) => {
     setEditingAnimal(animal);
     setIsEditModalOpen(true);
   };
-
   const handleCloseEdit = () => {
     setIsEditModalOpen(false);
     setEditingAnimal(null);
   };
-  
-  /**
-   * Guarda un animal (nuevo o editado) vía FormData.
-   */
   const handleSaveAnimal = async (formData) => {
     const response = await fetch(API_URL_CRUD, {
       method: 'POST',
@@ -143,15 +149,11 @@ function App() {
     const data = await response.json();
     if (data.success) {
       handleCloseEdit();
-      await getAnimals(); // Recarga la lista de animales
+      await getAnimals(); 
     } else {
       throw new Error(data.message || 'Error al guardar');
     }
   };
-
-  /**
-   * Envía la orden de eliminar un animal a la API.
-   */
   const handleDeleteAnimal = async (animalId, imageURL, audioURL) => {
     if (!window.confirm("¿Estás seguro de que quieres eliminar este animal?")) {
       return;
@@ -160,17 +162,11 @@ function App() {
       const response = await fetch(API_URL_CRUD, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          accion: 'eliminar', 
-          id: animalId,
-          imageURL: imageURL,
-          audioURL: audioURL
-        }) 
+        body: JSON.stringify({ accion: 'eliminar', id: animalId, imageURL: imageURL, audioURL: audioURL }) 
       });
-
       const data = await response.json();
       if (data.success) {
-        await getAnimals(); // Recarga la lista
+        await getAnimals(); 
       } else {
         throw new Error(data.message || 'Error al eliminar');
       }
@@ -179,7 +175,19 @@ function App() {
     }
   };
 
-  // --- Configuración de Estilos ---
+  // Función para pausar/reproducir fondo manualmente
+  const toggleBgMusic = () => {
+    if (bgAudioRef.current) {
+      if (isBgPlaying) {
+        bgAudioRef.current.pause();
+        setIsBgPlaying(false);
+      } else {
+        bgAudioRef.current.play();
+        setIsBgPlaying(true);
+      }
+    }
+  };
+
   const filterColors = {
     Todos: 'bg-purple-400',
     Aves: 'bg-sky-400',
@@ -192,18 +200,16 @@ function App() {
   const inactiveColor = 'text-gray-800 hover:scale-105';
 
   return (
-    <div className="min-h-screen bg-gray-100 font-luckiest relative">
-      <video autoPlay loop muted playsInline className="video-background">
-        <source src="/videos/video_fondo.mp4" type="video/mp4" />
-      </video>
+    <div className="min-h-screen font-luckiest relative">
+      
+      {/* --- AUDIO DE FONDO --- */}
+      <audio ref={bgAudioRef} loop src="/audio/fondo.mp3" />
       
       <nav className="bg-blue-500 p-4 shadow-md sticky top-0 z-40">
         <div className="container mx-auto flex items-center px-2 md:px-4">
-          
           <div className="flex-1">
             <img src="/images/Logo-Angostura.png" alt="Angostura del Biobío" className="h-12" />
           </div>
-
           <div className="flex-1 flex justify-center px-4">
             <div className="relative">
               <input 
@@ -215,9 +221,18 @@ function App() {
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
             </div>
           </div>
-          
           <div className="flex-1 flex justify-end">
             <div className="flex items-center gap-3 md:gap-6">
+              
+              {/* --- BOTÓN DE CONFIGURACIÓN DE AUDIO --- */}
+              <button 
+                onClick={() => setIsAudioSettingsOpen(true)}
+                className="p-2 rounded-full bg-white/20 hover:bg-white/40 text-white transition-colors"
+                title="Configurar Sonido"
+              >
+                {isBgPlaying ? '🔊' : '🔇'}
+              </button>
+
               <button 
                 className="flex items-center gap-2 text-white font-semibold text-xs md:text-base"
                 onClick={() => setIsQrModalOpen(true)}
@@ -271,7 +286,6 @@ function App() {
       </div>
 
       <main className="container mx-auto p-4">
-        {/* Lógica de renderizado actualizada para mostrar carga, error o contenido */}
         {isLoading ? (
           <div className="text-center text-white text-xl p-4 bg-black/50 rounded-lg">Cargando...</div>
         ) : error ? (
@@ -296,12 +310,12 @@ function App() {
         )}
       </main>
 
-      {/* Modales */}
       {selectedAnimal && (
         <AnimalModal 
           animal={selectedAnimal} 
           onClose={() => setSelectedAnimal(null)} 
           volverImg={volverImg}
+          volume={animalVolume} // <-- Pasamos el volumen al modal
         />
       )}
       {isQrModalOpen && ( <QRModal onClose={() => setIsQrModalOpen(false)} /> )}
@@ -319,6 +333,19 @@ function App() {
           initialData={editingAnimal}
           onClose={handleCloseEdit}
           onSave={handleSaveAnimal}
+        />
+      )}
+
+      {/* --- MODAL DE CONFIGURACIÓN DE AUDIO --- */}
+      {isAudioSettingsOpen && (
+        <AudioControls
+          bgVolume={bgVolume}
+          setBgVolume={setBgVolume}
+          animalVolume={animalVolume}
+          setAnimalVolume={setAnimalVolume}
+          isBgPlaying={isBgPlaying}
+          toggleBgMusic={toggleBgMusic}
+          onClose={() => setIsAudioSettingsOpen(false)}
         />
       )}
     </div>

@@ -1,23 +1,49 @@
+/* src/index.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Estilos para el video de fondo */
-.video-background {
-  position: fixed;
-  right: 0;
-  bottom: 0;
-  min-width: 100%;
-  min-height: 100%;
-  width: auto;
-  height: auto;
-  z-index: -100;
-  object-fit: cover;
-  filter: brightness(0.7);
-}
-
-/* Asegura que el contenido de React esté sobre el video */
+/*
+  Estilos para el contenedor principal de la aplicación.
+  Lo definimos como relativo para que los elementos hijos absolutos
+  se posicionen respecto a él.
+*/
 #root > div {
   position: relative;
-  z-index: 1;
+  min-height: 100vh;
+  /* Quitamos las propiedades de fondo directo de aquí */
+}
+
+/*
+  Creamos un pseudo-elemento "::before" que actuará como nuestra capa de fondo.
+  Se posiciona detrás del contenido (z-index: -1).
+*/
+#root > div::before {
+  content: "";
+  position: fixed; /* Fijo a la ventana del navegador */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1; 
+  background-image: url('/images/fondo-estatico.png');
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  filter: blur(2px);
+
+  transform: scale(1.1);
+}
+
+#root > div::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1; 
+  background-color: rgba(0, 0, 0, 0.4);
 }
