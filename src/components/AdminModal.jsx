@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
-/**
- * Componente reutilizable para un campo de texto o textarea del formulario.
- */
 const FormInput = ({ label, name, value, onChange, type = 'text' }) => (
   <div className="mb-4">
     <label className="block text-sm font-bold mb-2 text-gray-700" htmlFor={name}>
@@ -17,9 +14,6 @@ const FormInput = ({ label, name, value, onChange, type = 'text' }) => (
   </div>
 );
 
-/**
- * Componente reutilizable para un <select> del formulario.
- */
 const FormSelect = ({ label, name, value, onChange, options }) => (
   <div className="mb-4">
     <label className="block text-sm font-bold mb-2 text-gray-700" htmlFor={name}>
@@ -31,13 +25,7 @@ const FormSelect = ({ label, name, value, onChange, options }) => (
   </div>
 );
 
-/**
- * Modal de formulario para crear o editar un animal.
- */
 export default function AdminModal({ initialData, onClose, onSave }) {
-  
-  // Inicializa el estado del formulario. Si no hay 'initialData',
-  // crea un objeto nuevo con un ID único.
   const [animalData, setAnimalData] = useState(initialData || {
     id: uuidv4(),
     nombre: '',
@@ -52,7 +40,6 @@ export default function AdminModal({ initialData, onClose, onSave }) {
     audioURL: '',
   });
 
-  // Estados para manejar los archivos seleccionados y sus vistas previas
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(initialData?.imageURL || null);
   const [audioFile, setAudioFile] = useState(null);
@@ -60,66 +47,50 @@ export default function AdminModal({ initialData, onClose, onSave }) {
   
   const [isLoading, setIsLoading] = useState(false);
 
-  // Actualiza el estado para campos de texto y select
   const handleChange = (e) => {
     const { name, value } = e.target;
     setAnimalData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Maneja la selección de archivo de imagen y genera una vista previa
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setImageFile(file); // Guarda el objeto File
-      setImagePreview(URL.createObjectURL(file)); // Crea URL temporal para <img>
+      setImageFile(file); 
+      setImagePreview(URL.createObjectURL(file)); 
     }
   };
 
-  // Maneja la selección de archivo de audio y genera una vista previa
   const handleAudioFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setAudioFile(file); // Guarda el objeto File
-      if (audioPreview) {
-        URL.revokeObjectURL(audioPreview); // Limpia la URL temporal anterior
-      }
-      setAudioPreview(URL.createObjectURL(file)); // Crea URL temporal para <audio>
+      setAudioFile(file);
+      if (audioPreview) URL.revokeObjectURL(audioPreview);
+      setAudioPreview(URL.createObjectURL(file)); 
     }
   };
 
   /**
-   * Se ejecuta al enviar el formulario.
-   * Construye un objeto FormData para enviar los datos de texto Y los archivos
-   * a la API de PHP.
+   * Envía el formulario como FormData para manejar la subida de archivos.
    */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     
     const formData = new FormData();
-    
-    // 1. Identifica la acción (crear o editar)
     formData.append('accion', initialData ? 'editar' : 'crear');
 
-    // 2. Agrega todos los datos de texto (nombre, tipo, etc.)
     for (const key in animalData) {
       formData.append(key, animalData[key]);
     }
     
-    // 3. Agrega las URLs existentes (para que PHP sepa si debe borrar archivos antiguos)
     formData.append('imageURL_existente', initialData?.imageURL || '');
     formData.append('audioURL_existente', initialData?.audioURL || '');
 
-    // 4. Agrega los archivos nuevos (si se seleccionaron)
-    if (imageFile) {
-      formData.append('imagen', imageFile);
-    }
-    if (audioFile) {
-      formData.append('audio', audioFile);
-    }
+    if (imageFile) formData.append('imagen', imageFile);
+    if (audioFile) formData.append('audio', audioFile);
 
     try {
-      await onSave(formData); // Llama a la función handleSaveAnimal en App.jsx
+      await onSave(formData); 
     } catch (error) {
       alert("Error al guardar: " + error.message);
       setIsLoading(false);

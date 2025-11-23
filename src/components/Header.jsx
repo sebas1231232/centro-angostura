@@ -1,13 +1,25 @@
 import React from 'react';
 
+/**
+ * Componente de Cabecera (Header/Navbar).
+ * Muestra el logo, la barra de búsqueda y los controles de administrador.
+ * * @param {string} title - Título de la aplicación (opcional, actualmente se usa logo).
+ * @param {function} onSearch - Función que se ejecuta al escribir en el buscador.
+ * @param {boolean} isAdmin - Indica si el usuario actual es administrador.
+ * @param {function} onOpenAdminPrompt - Abre el modal de login.
+ * @param {function} onOpenAdd - Abre el modal para agregar un animal.
+ * @param {function} onCloseAdminSession - Cierra la sesión de administrador.
+ */
 export default function Header({ title, onSearch, isAdmin, onOpenAdminPrompt, onOpenAdd, onCloseAdminSession }) {
   return (
     <header className="w-full">
       <div className="app-container header-inner">
+        {/* Sección Izquierda: Título/Logo */}
         <div className="header-left">
           <div className="header-title">{title}</div>
         </div>
 
+        {/* Sección Derecha: Buscador y Botones */}
         <div className="header-controls">
           <div className="header-search">
             <input
@@ -17,6 +29,7 @@ export default function Header({ title, onSearch, isAdmin, onOpenAdminPrompt, on
             <span>🔎</span>
           </div>
           
+          {/* Botones visibles solo para Administrador */}
           {isAdmin && (
             <>
               <button onClick={onOpenAdd} className="btn-primary btn-add">
@@ -28,6 +41,7 @@ export default function Header({ title, onSearch, isAdmin, onOpenAdminPrompt, on
             </>
           )}
           
+          {/* Botón de acceso a Admin (visible para usuarios normales) */}
           {!isAdmin && (
             <button
               title="Modo administrador"

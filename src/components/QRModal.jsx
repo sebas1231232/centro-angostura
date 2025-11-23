@@ -1,13 +1,8 @@
 import React from 'react';
 import QRCode from 'react-qr-code';
 
-/**
- * Modal que muestra un código QR con la URL de la página actual.
- */
 export default function QRModal({ onClose }) {
-  // Obtiene la URL actual de la ventana del navegador.
-  // IMPORTANTE: Para que funcione en móviles, esta URL debe ser la IP de la red local
-  // (ej. http://192.168.1.100) y no 'localhost'.
+  // La URL actual se usará para generar el QR
   const pageURL = window.location.href;
 
   return (
@@ -20,7 +15,6 @@ export default function QRModal({ onClose }) {
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-xl font-bold text-gray-800">Compartir Pantalla Interactiva</h2>
-        {/* Contenedor del código QR */}
         <div className="p-4 bg-white border-4 border-red-500 rounded-lg">
           <QRCode value={pageURL} size={200} />
         </div>

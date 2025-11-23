@@ -1,57 +1,57 @@
-// src/App.jsx
-import React, { useState, useEffect, useRef } from 'react'; // Importar useRef
+import React, { useState, useEffect, useRef } from 'react';
 import AnimalCard from './components/AnimalCard.jsx';
 import AnimalModal from './components/AnimalModal.jsx';
 import QRModal from './components/QRModal.jsx';
 import AdminLoginModal from './components/AdminLoginModal.jsx';
 import AdminModal from './components/AdminModal.jsx'; 
-import AudioControls from './components/AudioControls.jsx'; // Importar nuevo componente
-import { v4 as uuidv4 } from 'uuid'; 
+import AudioControls from './components/AudioControls.jsx'; 
 
 const volverImg = '/images/volver.png'; 
 
+// Endpoints de la API PHP
 const API_URL_GET = '/api/animals.php';
 const API_URL_LOGIN = '/api/admin_login.php';
 const API_URL_CRUD = '/api/admin_crud.php';
 
 function App() {
+  // Datos y Filtros
   const [animals, setAnimals] = useState([]);
   const [filteredAnimals, setFilteredAnimals] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null); 
-
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('Todos');
+
+  // Modales y Selección
   const [selectedAnimal, setSelectedAnimal] = useState(null);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   
+  // Administración
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingAnimal, setEditingAnimal] = useState(null);
 
-  // --- ESTADOS DE AUDIO ---
+  // Configuración de Audio
   const [isAudioSettingsOpen, setIsAudioSettingsOpen] = useState(false);
-  const [bgVolume, setBgVolume] = useState(0.3); // Volumen inicial fondo (30%)
-  const [animalVolume, setAnimalVolume] = useState(1.0); // Volumen inicial animales (100%)
+  const [bgVolume, setBgVolume] = useState(0.3);
+  const [animalVolume, setAnimalVolume] = useState(1.0);
   const [isBgPlaying, setIsBgPlaying] = useState(false);
-  const bgAudioRef = useRef(null); // Referencia al audio de fondo
-  // ------------------------
+  const bgAudioRef = useRef(null);
 
+  /**
+   * Obtiene la lista de animales desde el backend.
+   */
   const getAnimals = async () => {
-    if (animals.length === 0) {
-      setIsLoading(true);
-    }
+    if (animals.length === 0) setIsLoading(true);
     setError(null); 
     try {
       const response = await fetch(API_URL_GET); 
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: No se pudieron cargar los datos.`);
-      }
+      if (!response.ok) throw new Error(`Error ${response.status}: No se pudieron cargar los datos.`);
+      
       const animalsData = await response.json();
-      if (animalsData.error) {
-         throw new Error(`Error de la API: ${animalsData.error}`);
-      }
+      if (animalsData.error) throw new Error(`Error de la API: ${animalsData.error}`);
+      
       setAnimals(animalsData);
     } catch (error) {
       console.error("Error al cargar animales:", error);
@@ -64,34 +64,33 @@ function App() {
     getAnimals();
   }, []);
 
-  // --- EFECTO PARA AUDIO DE FONDO ---
+  /**
+   * Inicializa el audio de fondo e intenta la reproducción automática.
+   */
   useEffect(() => {
     const audio = bgAudioRef.current;
     if (audio) {
       audio.volume = bgVolume;
-      // Intentar reproducir automáticamente
       const playPromise = audio.play();
       if (playPromise !== undefined) {
         playPromise
-          .then(() => {
-            setIsBgPlaying(true);
-          })
-          .catch(error => {
+          .then(() => setIsBgPlaying(true))
+          .catch(() => {
             console.log("Autoplay bloqueado. El usuario debe iniciar el audio manualmente.");
             setIsBgPlaying(false);
           });
       }
     }
-  }, []); // Se ejecuta solo al montar
+  }, []);
 
-  // Efecto para actualizar volumen en tiempo real
+  // Actualiza el volumen del audio de fondo en tiempo real
   useEffect(() => {
     if (bgAudioRef.current) {
       bgAudioRef.current.volume = bgVolume;
     }
   }, [bgVolume]);
-  // ----------------------------------
 
+  // Filtra los animales por categoría y término de búsqueda
   useEffect(() => {
     let result = animals;
     if (activeFilter !== 'Todos') {
@@ -108,9 +107,12 @@ function App() {
     setFilteredAnimals(result);
   }, [searchTerm, activeFilter, animals]);
 
-  const handleSearch = (term) => { setSearchTerm(term); };
-  const handleFilter = (filter) => { setActiveFilter(filter); };
+  const handleSearch = (term) => setSearchTerm(term);
+  const handleFilter = (filter) => setActiveFilter(filter);
 
+  /**
+   * Autentica al administrador contra la base de datos.
+   */
   const handleLogin = async (email, password) => {
     const response = await fetch(API_URL_LOGIN, {
       method: 'POST',
@@ -127,8 +129,9 @@ function App() {
     }
   };
 
-  const handleLogout = () => { setIsAdmin(false); };
+  const handleLogout = () => setIsAdmin(false);
 
+  // Manejo del Modal de Edición/Creación
   const handleOpenAdd = () => {
     setEditingAnimal(null); 
     setIsEditModalOpen(true);
@@ -141,6 +144,10 @@ function App() {
     setIsEditModalOpen(false);
     setEditingAnimal(null);
   };
+  
+  /**
+   * Envía los datos del animal (texto y archivos) al backend.
+   */
   const handleSaveAnimal = async (formData) => {
     const response = await fetch(API_URL_CRUD, {
       method: 'POST',
@@ -154,15 +161,18 @@ function App() {
       throw new Error(data.message || 'Error al guardar');
     }
   };
+
+  /**
+   * Elimina un animal y sus archivos asociados.
+   */
   const handleDeleteAnimal = async (animalId, imageURL, audioURL) => {
-    if (!window.confirm("¿Estás seguro de que quieres eliminar este animal?")) {
-      return;
-    }
+    if (!window.confirm("¿Estás seguro de que quieres eliminar este animal?")) return;
+    
     try {
       const response = await fetch(API_URL_CRUD, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accion: 'eliminar', id: animalId, imageURL: imageURL, audioURL: audioURL }) 
+        body: JSON.stringify({ accion: 'eliminar', id: animalId, imageURL, audioURL }) 
       });
       const data = await response.json();
       if (data.success) {
@@ -175,7 +185,9 @@ function App() {
     }
   };
 
-  // Función para pausar/reproducir fondo manualmente
+  /**
+   * Alterna la reproducción del audio de fondo.
+   */
   const toggleBgMusic = () => {
     if (bgAudioRef.current) {
       if (isBgPlaying) {
@@ -202,7 +214,6 @@ function App() {
   return (
     <div className="min-h-screen font-luckiest relative">
       
-      {/* --- AUDIO DE FONDO --- */}
       <audio ref={bgAudioRef} loop src="/audio/fondo.mp3" />
       
       <nav className="bg-blue-500 p-4 shadow-md sticky top-0 z-40">
@@ -224,7 +235,6 @@ function App() {
           <div className="flex-1 flex justify-end">
             <div className="flex items-center gap-3 md:gap-6">
               
-              {/* --- BOTÓN DE CONFIGURACIÓN DE AUDIO --- */}
               <button 
                 onClick={() => setIsAudioSettingsOpen(true)}
                 className="p-2 rounded-full bg-white/20 hover:bg-white/40 text-white transition-colors"
@@ -274,10 +284,7 @@ function App() {
             key={filter}
             onClick={() => handleFilter(filter)}
             className={`px-6 py-2 rounded-full font-bold text-sm shadow-md transition-transform duration-150 ease-in-out font-luckiest tracking-wider
-              ${activeFilter === filter 
-                ? activeColor
-                : `${filterColors[filter]} ${inactiveColor}`
-              }
+              ${activeFilter === filter ? activeColor : `${filterColors[filter]} ${inactiveColor}`}
             `}
           >
             {filter.toUpperCase()}
@@ -315,9 +322,10 @@ function App() {
           animal={selectedAnimal} 
           onClose={() => setSelectedAnimal(null)} 
           volverImg={volverImg}
-          volume={animalVolume} // <-- Pasamos el volumen al modal
+          volume={animalVolume}
         />
       )}
+      
       {isQrModalOpen && ( <QRModal onClose={() => setIsQrModalOpen(false)} /> )}
       
       {isLoginModalOpen && (
@@ -336,7 +344,6 @@ function App() {
         />
       )}
 
-      {/* --- MODAL DE CONFIGURACIÓN DE AUDIO --- */}
       {isAudioSettingsOpen && (
         <AudioControls
           bgVolume={bgVolume}

@@ -3,21 +3,14 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  
-  // Configura un proxy de desarrollo.
-  // Esto redirige las peticiones de React (ej. localhost:5173) al servidor XAMPP (localhost:80)
-  // para evitar problemas de CORS y simular el entorno de producción.
-
   server: {
+    // Configuración de Proxy para redirigir peticiones del frontend (puerto 5173)
+    // al backend XAMPP (puerto 80) durante el desarrollo.
     proxy: {
-
-      // Redirige peticiones de API (ej. /api/animals.php)
       '/api': {
         target: 'http://localhost',
         changeOrigin: true,
       },
-
-      // Redirige peticiones de archivos (ej. /uploads/imagen.jpg)
       '/uploads': {
         target: 'http://localhost',
         changeOrigin: true,

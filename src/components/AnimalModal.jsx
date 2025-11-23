@@ -1,4 +1,3 @@
-// src/components/AnimalModal.jsx
 import React, { useEffect, useRef } from 'react';
 
 const InfoItem = ({ label, value, isMobile }) => (
@@ -10,18 +9,16 @@ const InfoItem = ({ label, value, isMobile }) => (
   ) : null
 );
 
-// --- CAMBIO: Ahora recibe 'volume' como prop ---
 export default function AnimalModal({ animal, onClose, volverImg, volume }) {
   const audioRef = useRef(null);
 
+  // Intenta reproducir el audio automáticamente al abrir el modal
   useEffect(() => {
     if (animal && animal.audioURL && audioRef.current) {
-      // --- CAMBIO: Aplicamos el volumen global antes de reproducir ---
-      audioRef.current.volume = volume; 
-      
+      audioRef.current.volume = volume;
       audioRef.current.play().catch(e => console.warn("Autoplay de audio bloqueado por el navegador."));
     }
-  }, [animal, volume]); // Agregamos 'volume' a las dependencias
+  }, [animal, volume]);
 
   if (!animal) return null;
 
@@ -30,10 +27,7 @@ export default function AnimalModal({ animal, onClose, volverImg, volume }) {
       className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
-      {/* ... (El resto del código de versión Desktop y Móvil es IDÉNTICO al anterior
-               SOLO asegúrate de que los tags <audio> usen audioRef) ... */}
-
-      {/* 1. VERSIÓN DESKTOP */}
+      {/* VERSIÓN DESKTOP */}
       <div 
         className="w-11/12 h-[95vh] bg-cover bg-no-repeat bg-center relative hidden md:flex items-center" 
         style={{ backgroundImage: "url('/fondo.png')"}}
@@ -41,6 +35,7 @@ export default function AnimalModal({ animal, onClose, volverImg, volume }) {
       >
         <div className="w-full px-32 lg:px-48 py-32"> 
           <div className="flex flex-col md:flex-row gap-8 items-start">
+            
             <div className="w-full md:w-1/3 flex-shrink-0 flex flex-col items-center">
               {animal.imageURL ? (
                 <img src={animal.imageURL} alt={animal.nombre} className="w-full max-w-md h-auto object-cover rounded-2xl border-4 border-lime-200 mb-4" />
@@ -48,7 +43,6 @@ export default function AnimalModal({ animal, onClose, volverImg, volume }) {
                 <div className="w-full max-w-md h-48 bg-lime-200 rounded-2xl flex items-center justify-center text-lime-600 mb-4">Sin imagen</div>
               )}
               
-              {/* Audio Desktop */}
               {animal.audioURL && (
                 <audio ref={audioRef} src={animal.audioURL} hidden>
                   Tu navegador no soporta audio.
@@ -60,10 +54,11 @@ export default function AnimalModal({ animal, onClose, volverImg, volume }) {
               </button>
             </div>
             
-            {/* ... Resto de info desktop ... */}
             <div className="w-full md:w-2/3 text-gray-800"> 
               <h2 className="text-4xl font-extrabold text-lime-800 mb-1">{animal.nombre}</h2>
-              {animal.nombreCientifico && (<h3 className="text-xl italic text-lime-700 mb-5">({animal.nombreCientifico})</h3>)}
+              {animal.nombreCientifico && (
+                <h3 className="text-xl italic text-lime-700 mb-5">({animal.nombreCientifico})</h3>
+              )}
               <ul className="space-y-3 font-quicksand">
                 <InfoItem label="Tipo" value={animal.tipo} isMobile={false} />
                 <InfoItem label="Dónde vive" value={animal.dondeVive} isMobile={false} />
@@ -77,7 +72,7 @@ export default function AnimalModal({ animal, onClose, volverImg, volume }) {
         </div>
       </div>
 
-      {/* 2. VERSIÓN MÓVIL */}
+      {/* VERSIÓN MÓVIL */}
       <div 
         className="flex flex-col md:hidden w-full max-w-sm bg-cover bg-no-repeat bg-center relative shadow-lg overflow-y-auto max-h-[90vh] rounded-[40px]" 
         style={{ backgroundImage: "url('/fondo_android.png')"}}
@@ -90,17 +85,17 @@ export default function AnimalModal({ animal, onClose, volverImg, volume }) {
             <div className="w-full max-w-[200px] h-32 bg-lime-200 rounded-2xl flex items-center justify-center text-lime-600 mb-4">Sin imagen</div>
           )}
 
-          {/* Audio Móvil */}
           {animal.audioURL && (
             <audio ref={audioRef} src={animal.audioURL} hidden>
               Tu navegador no soporta audio.
             </audio>
           )}
 
-          {/* ... Resto info móvil ... */}
           <div className="text-gray-800 w-full">
             <h2 className="text-2xl font-extrabold text-lime-800 mb-1 text-center">{animal.nombre}</h2>
-            {animal.nombreCientifico && (<h3 className="text-base italic text-lime-700 mb-3 text-center">({animal.nombreCientifico})</h3>)}
+            {animal.nombreCientifico && (
+              <h3 className="text-base italic text-lime-700 mb-3 text-center">({animal.nombreCientifico})</h3>
+            )}
             <ul className="space-y-2 font-quicksand">
               <InfoItem label="Tipo" value={animal.tipo} isMobile={true} />
               <InfoItem label="Dónde vive" value={animal.dondeVive} isMobile={true} />

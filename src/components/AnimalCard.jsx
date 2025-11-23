@@ -1,35 +1,22 @@
-// src/components/AnimalCard.jsx
 import React from 'react';
 
 export default function AnimalCard({ animal, onOpen, isAdmin, onEdit, onDelete }) {
   
-  /**
-   * Detiene la propagación del click para evitar que se abra el modal
-   * de detalles al hacer clic en los botones de admin.
-   */
   const handleEdit = (e) => {
     e.stopPropagation(); 
     onEdit();
   };
 
-  /**
-   * Detiene la propagación del click al eliminar.
-   */
   const handleDelete = (e) => {
     e.stopPropagation(); 
     onDelete();
   };
 
   return (
-    // --- CAMBIO AQUÍ ---
-    // 'bg-blue-600/80': Azul con 80% de opacidad.
-    // 'backdrop-blur-sm': Mantiene el efecto de vidrio.
     <div 
       className="bg-blue-600/80 backdrop-blur-sm text-white rounded-3xl shadow-lg overflow-hidden flex flex-col items-center p-4 relative cursor-pointer transition-transform hover:scale-105"
       onClick={() => onOpen(animal)}
     >
-      
-      {/* Botones de Admin (solo visibles si isAdmin es true) */}
       {isAdmin && (
         <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
           <button 
@@ -53,7 +40,6 @@ export default function AnimalCard({ animal, onOpen, isAdmin, onEdit, onDelete }
         </div>
       )}
 
-      {/* Imagen */}
       <div className="w-full h-48 rounded-2xl overflow-hidden mb-4">
         {animal.imageURL ? (
           <img 
@@ -68,7 +54,6 @@ export default function AnimalCard({ animal, onOpen, isAdmin, onEdit, onDelete }
         )}
       </div>
 
-      {/* Footer de la Card */}
       <div className="text-center">
         <h3 className="text-xl font-extrabold uppercase">{animal.nombre}</h3>
         <div className="text-sm opacity-80 uppercase">{animal.tipo}</div>

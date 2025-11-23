@@ -1,42 +1,31 @@
-/* src/index.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/*
-  Estilos para el contenedor principal de la aplicación.
-  Lo definimos como relativo para que los elementos hijos absolutos
-  se posicionen respecto a él.
-*/
+/* Contenedor principal con posicionamiento relativo */
 #root > div {
   position: relative;
   min-height: 100vh;
-  /* Quitamos las propiedades de fondo directo de aquí */
 }
 
-/*
-  Creamos un pseudo-elemento "::before" que actuará como nuestra capa de fondo.
-  Se posiciona detrás del contenido (z-index: -1).
-*/
+/* Capa de fondo con imagen desenfocada */
 #root > div::before {
   content: "";
-  position: fixed; /* Fijo a la ventana del navegador */
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   z-index: -1; 
   background-image: url('/images/fondo-estatico.png');
-
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-
   filter: blur(2px);
-
-  transform: scale(1.1);
+  transform: scale(1.1); /* Evita bordes blancos por el blur */
 }
 
+/* Capa de superposición oscura para mejorar contraste */
 #root > div::after {
   content: "";
   position: fixed;
